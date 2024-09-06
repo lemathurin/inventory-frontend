@@ -1,5 +1,8 @@
-import type { Metadata } from "next";
+import { ReactNode } from 'react';
+import { Metadata } from 'next';
 import localFont from "next/font/local";
+import LogoutButton from '@/components/LogoutButton';
+import ClientLogoutButton from '@/components/ClientLogoutButton';
 import "./globals.css";
 
 const geistSans = localFont({
@@ -28,6 +31,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+         <ClientLogoutButton />
         {children}
       </body>
     </html>
