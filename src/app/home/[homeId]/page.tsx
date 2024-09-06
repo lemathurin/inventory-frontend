@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -31,6 +31,7 @@ type Item = {
 };
 
 export default function Home() {
+  const { homeId } = useParams();
   const [items, setItems] = useState<Item[]>([]);
   const [newItemName, setNewItemName] = useState("");
   const [newItemDescription, setNewItemDescription] = useState("");
@@ -39,12 +40,12 @@ export default function Home() {
 
   useEffect(() => {
     fetchItems();
-  }, []);
+  }, [homeId]);
 
   const fetchItems = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get("http://localhost:3000/api/items", {
+      const response = await axios.get(`http://localhost:3000/api/homes/${homeId}/items`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setItems(response.data);
@@ -58,7 +59,7 @@ export default function Home() {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
-        "http://localhost:3000/api/items",
+        `http://localhost:3000/api/homes/${homeId}/items`,
         { name: newItemName, description: newItemDescription },
         { headers: { Authorization: `Bearer ${token}` } }
       );

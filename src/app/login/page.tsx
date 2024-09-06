@@ -50,15 +50,14 @@ export default function Login() {
       console.log("Full response:", response);
       console.log("Response data:", response.data);
 
-      const { token, id } = response.data;
-      if (token) {
+      const { token, id, homeId } = response.data;
+      console.log("homeId received:", homeId);
+      if (token && homeId) {
         localStorage.setItem("token", token);
         localStorage.setItem("userId", id.toString());
-        console.log("Token stored:", token);
-        console.log("User ID stored:", id);
-        router.push("/home");
+        router.push(`/home/${homeId}`);
       } else {
-        setError("Login successful, but no token received. Please try again.");
+        setError("Login successful, but home information is missing. Please try again.");
       }
     } catch (err) {
       console.error("Login error:", err);

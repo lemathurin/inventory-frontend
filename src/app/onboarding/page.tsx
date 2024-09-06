@@ -62,8 +62,19 @@ export default function Onboarding() {
         { ...data, userId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+
       console.log("Response:", response.data);
-      router.push("/home");
+
+      // Check if the response contains the home object with an id
+      if (response.data.home && response.data.home.id) {
+        const newHomeId = response.data.home.id;
+        // Store the new home id in localStorage if needed
+        localStorage.setItem("currentHomeId", newHomeId);
+        // Redirect to the new home page
+        router.push(`/home/${newHomeId}`);
+      } else {
+        setError("Home created but no ID returned. Please try again.");
+      }
     } catch (err) {
       console.error("Error:", err);
       if (axios.isAxiosError(err) && err.response?.status === 403) {
