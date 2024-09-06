@@ -3,6 +3,26 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { PlusCircle } from "lucide-react";
 
 type Item = {
   id: number;
@@ -51,49 +71,64 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 py-6 flex flex-col justify-center sm:py-12">
-      <div className="relative py-3 sm:max-w-xl sm:mx-auto">
-        <div className="relative px-4 py-10 bg-white shadow-lg sm:rounded-3xl sm:p-20">
-          <h1 className="text-2xl font-semibold mb-4">Your Home Inventory</h1>
-          {items.length === 0 ? (
-            <p>You have no items yet. Add your first item below!</p>
-          ) : (
-            <ul className="mb-4">
-              {items.map((item) => (
-                <li key={item.id} className="mb-2">
-                  <strong>{item.name}</strong>: {item.description}
-                </li>
-              ))}
-            </ul>
+    <div className="min-h-screen bg-gray-100 p-8">
+      <Card className="max-w-4xl mx-auto">
+        <CardHeader>
+          <CardTitle className="text-3xl font-bold">
+            Your Home Inventory
+          </CardTitle>
+          <CardDescription>Manage your household items here</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           )}
-          <form onSubmit={addItem} className="mt-4">
-            <input
+          {items.length === 0 ? (
+            <p className="text-center text-gray-500 my-4">
+              You have no items yet. Add your first item below!
+            </p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Description</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {items.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell className="font-medium">{item.name}</TableCell>
+                    <TableCell>{item.description}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+        <CardFooter>
+          <form onSubmit={addItem} className="w-full space-y-4">
+            <Input
               type="text"
               value={newItemName}
               onChange={(e) => setNewItemName(e.target.value)}
               placeholder="Item name"
-              className="mb-2 w-full px-3 py-2 border border-gray-300 rounded-md"
               required
             />
-            <input
+            <Input
               type="text"
               value={newItemDescription}
               onChange={(e) => setNewItemDescription(e.target.value)}
               placeholder="Item description"
-              className="mb-2 w-full px-3 py-2 border border-gray-300 rounded-md"
             />
-            <button
-              type="submit"
-              className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600"
-            >
-              Add Item
-            </button>
+            <Button type="submit" className="w-full">
+              <PlusCircle className="mr-2 h-4 w-4" /> Add Item
+            </Button>
           </form>
-          {error && (
-            <p className="mt-2 text-center text-sm text-red-600">{error}</p>
-          )}
-        </div>
-      </div>
+        </CardFooter>
+      </Card>
     </div>
   );
 }

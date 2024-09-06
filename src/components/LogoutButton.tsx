@@ -17,7 +17,7 @@ export default function LogoutButton() {
     <Button
       onClick={handleLogout}
       className="absolute top-4 right-4 p-2"
-      variant="ghost"
+      // variant="ghost"
       size="icon"
       aria-label="Logout"
     >
