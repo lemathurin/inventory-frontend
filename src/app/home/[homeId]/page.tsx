@@ -45,17 +45,30 @@ export default function Home() {
   const fetchItems = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get(`http://localhost:3000/api/homes/${homeId}/items`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      console.log("Fetching items for homeId:", homeId);
+      const response = await axios.get(
+        `http://localhost:3000/api/homes/${homeId}/items`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      console.log("Items received:", response.data.length);
       setItems(response.data);
     } catch (err) {
       setError("Failed to fetch items");
+      console.error(err);
     }
   };
 
   const addItem = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+
+    if (!newItemName.trim()) {
+      setError("Item name cannot be empty");
+      return;
+    }
+
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
@@ -66,8 +79,11 @@ export default function Home() {
       setItems([...items, response.data]);
       setNewItemName("");
       setNewItemDescription("");
-    } catch (err) {
-      setError("Failed to add item");
+    } catch (err: any) {
+      console.error("Error adding item:", err);
+      setError(
+        "Failed to add item: " + (err.response?.data?.error || err.message)
+      );
     }
   };
 
