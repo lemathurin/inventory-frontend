@@ -22,12 +22,25 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { PlusCircle } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { PlusCircle, Edit, Trash2 } from "lucide-react";
 
 type Item = {
-  id: number;
+  id: string;
   name: string;
-  description: string;
+  description?: string;
+  purchaseDate?: string;
+  price?: number;
+  warranty?: number;
+  homeId: string;
+  ownerId: string;
 };
 
 export default function Home() {
@@ -36,6 +49,8 @@ export default function Home() {
   const [newItemName, setNewItemName] = useState("");
   const [newItemDescription, setNewItemDescription] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -87,6 +102,59 @@ export default function Home() {
     }
   };
 
+  const openItemDialog = (item: Item) => {
+    setSelectedItem(item);
+    setIsDialogOpen(true);
+  };
+
+  const closeItemDialog = () => {
+    setSelectedItem(null);
+    setIsDialogOpen(false);
+  };
+
+  const updateItem = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedItem) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.put(
+        `http://localhost:3000/api/homes/${homeId}/items/${selectedItem.id}`,
+        selectedItem,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setItems(
+        items.map((item) =>
+          item.id === selectedItem.id ? response.data : item
+        )
+      );
+      closeItemDialog();
+    } catch (err: any) {
+      console.error("Error updating item:", err);
+      setError(
+        "Failed to update item: " + (err.response?.data?.error || err.message)
+      );
+    }
+  };
+
+  const deleteItem = async () => {
+    if (!selectedItem) return;
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(
+        `http://localhost:3000/api/homes/${homeId}/items/${selectedItem.id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setItems(items.filter((item) => item.id !== selectedItem.id));
+      closeItemDialog();
+    } catch (err: any) {
+      console.error("Error deleting item:", err);
+      setError(
+        "Failed to delete item: " + (err.response?.data?.error || err.message)
+      );
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <Card className="max-w-4xl mx-auto">
@@ -112,6 +180,7 @@ export default function Home() {
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Description</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -119,6 +188,15 @@ export default function Home() {
                   <TableRow key={item.id}>
                     <TableCell className="font-medium">{item.name}</TableCell>
                     <TableCell>{item.description}</TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openItemDialog(item)}
+                      >
+                        <Edit className="h-4 w-4 mr-2" /> Edit
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -146,6 +224,114 @@ export default function Home() {
           </form>
         </CardFooter>
       </Card>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="bg-white sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit Item</DialogTitle>
+          </DialogHeader>
+          {selectedItem && (
+            <form onSubmit={updateItem} className="space-y-4">
+              <div>
+                <Label htmlFor="id">ID (not editable)</Label>
+                <Input id="id" value={selectedItem.id} disabled />
+              </div>
+              <div>
+                <Label htmlFor="name">Name</Label>
+                <Input
+                  id="name"
+                  value={selectedItem.name}
+                  onChange={(e) =>
+                    setSelectedItem({ ...selectedItem, name: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="description">Description</Label>
+                <Input
+                  id="description"
+                  value={selectedItem.description || ""}
+                  onChange={(e) =>
+                    setSelectedItem({
+                      ...selectedItem,
+                      description: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="purchaseDate">Purchase Date</Label>
+                <Input
+                  id="purchaseDate"
+                  type="date"
+                  value={
+                    selectedItem.purchaseDate
+                      ? new Date(selectedItem.purchaseDate)
+                          .toISOString()
+                          .split("T")[0]
+                      : ""
+                  }
+                  onChange={(e) =>
+                    setSelectedItem({
+                      ...selectedItem,
+                      purchaseDate: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="price">Price</Label>
+                <Input
+                  id="price"
+                  type="number"
+                  value={selectedItem.price || ""}
+                  onChange={(e) =>
+                    setSelectedItem({
+                      ...selectedItem,
+                      price: parseFloat(e.target.value),
+                    })
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="warranty">Warranty (months)</Label>
+                <Input
+                  id="warranty"
+                  type="number"
+                  value={selectedItem.warranty || ""}
+                  onChange={(e) =>
+                    setSelectedItem({
+                      ...selectedItem,
+                      warranty: parseInt(e.target.value),
+                    })
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="homeId">Home ID (not editable)</Label>
+                <Input id="homeId" value={selectedItem.homeId} disabled />
+              </div>
+              <div>
+                <Label htmlFor="ownerId">Owner ID (not editable)</Label>
+                <Input id="ownerId" value={selectedItem.ownerId} disabled />
+              </div>
+              <DialogFooter className="flex flex-col sm:flex-row sm:justify-between gap-2">
+                <Button type="submit" className="w-full sm:w-auto">
+                  Save changes
+                </Button>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  className="w-full sm:w-auto"
+                  onClick={deleteItem}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" /> Delete Item
+                </Button>
+              </DialogFooter>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
