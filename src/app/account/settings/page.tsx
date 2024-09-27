@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Toaster, toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
 import { apiUrl } from "@/config/api";
+import { DeleteAccountModal } from "@/components/delete-account-modal";
 
 export default function AccountSettings() {
   const [userData, setUserData] = useState({ name: "", email: "" });
@@ -28,6 +29,7 @@ export default function AccountSettings() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoadingPassword, setIsLoadingPassword] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const togglePasswordVisibility = () => {
     setShowPasswords(!showPasswords);
@@ -154,6 +156,34 @@ export default function AccountSettings() {
       );
     } finally {
       setIsLoadingPassword(false);
+    }
+  };
+
+  const handleDeleteAccount = async (password: string) => {
+    try {
+      const response = await fetch(apiUrl("/users/delete-account"), {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ password }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete account");
+      }
+      toast.success("Account deleted successfully");
+      // Clear local storage and redirect to home page or login page after successful deletion
+      localStorage.removeItem("token");
+      window.location.href = "/login";
+    } catch (error: any) {
+      console.error("Error deleting account:", error);
+      toast.error(
+        error.message || "An error occurred while deleting your account"
+      );
+    } finally {
+      setIsDeleteModalOpen(false);
     }
   };
 
@@ -344,11 +374,22 @@ export default function AccountSettings() {
           </p>
         </CardContent>
         <CardFooter>
-          <Button variant="destructive" className="w-full sm:w-auto">
+          <Button
+            variant="destructive"
+            className="w-full sm:w-auto"
+            onClick={() => setIsDeleteModalOpen(true)}
+          >
             Delete Account
           </Button>
         </CardFooter>
       </Card>
+
+      <DeleteAccountModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteAccount}
+        currentPassword={currentPassword}
+      />
     </div>
   );
 }
