@@ -19,6 +19,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { apiUrl } from "@/config/api";
 
 const schema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
@@ -43,10 +44,7 @@ export default function SignUp() {
 
   const onSubmit = async (data: FormData) => {
     try {
-      const response = await axios.post(
-        "http://localhost:3000/api/users/register",
-        data
-      );
+      const response = await axios.post(apiUrl(`/users/register`), data);
 
       console.log("Full response:", response);
       console.log("Response data:", response.data);

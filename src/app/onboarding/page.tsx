@@ -18,6 +18,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { apiUrl } from "@/config/api";
 
 const schema = z.object({
   name: z.string().min(1, { message: "Home name is required" }),
@@ -58,7 +59,7 @@ export default function Onboarding() {
       }
 
       const response = await axios.post(
-        "http://localhost:3000/api/homes",
+        apiUrl(`/homes`),
         { ...data, userId },
         { headers: { Authorization: `Bearer ${token}` } }
       );

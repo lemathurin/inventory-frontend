@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Toaster, toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
+import { apiUrl } from "@/config/api";
 
 export default function AccountSettings() {
   const [userData, setUserData] = useState({ name: "", email: "" });
@@ -38,7 +39,7 @@ export default function AccountSettings() {
 
   const fetchUserData = async () => {
     try {
-      const response = await fetch("http://localhost:3000/api/users/me", {
+      const response = await fetch(apiUrl("/users/me"), {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -63,17 +64,14 @@ export default function AccountSettings() {
     setIsLoadingName(true);
     try {
       console.log("Sending request with newName:", newName);
-      const response = await fetch(
-        "http://localhost:3000/api/users/change-name",
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify({ newName }),
-        }
-      );
+      const response = await fetch(apiUrl("/users/change-name"), {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ newName }),
+      });
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -98,17 +96,14 @@ export default function AccountSettings() {
     e.preventDefault();
     setIsLoadingEmail(true);
     try {
-      const response = await fetch(
-        "http://localhost:3000/api/users/change-email",
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify({ newEmail }),
-        }
-      );
+      const response = await fetch(apiUrl("/users/change-email"), {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ newEmail }),
+      });
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to change email");
@@ -136,17 +131,14 @@ export default function AccountSettings() {
     }
     setIsLoadingPassword(true);
     try {
-      const response = await fetch(
-        "http://localhost:3000/api/users/change-password",
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify({ currentPassword, newPassword }),
-        }
-      );
+      const response = await fetch(apiUrl("/users/change-password"), {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to change password");

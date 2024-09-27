@@ -19,6 +19,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { apiUrl } from "@/config/api";
 
 const schema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -42,10 +43,7 @@ export default function Login() {
 
   const onSubmit = async (data: FormData) => {
     try {
-      const response = await axios.post(
-        "http://localhost:3000/api/users/login",
-        data
-      );
+      const response = await axios.post(apiUrl(`/users/login`), data);
 
       console.log("Full response:", response);
       console.log("Response data:", response.data);
@@ -57,7 +55,9 @@ export default function Login() {
         localStorage.setItem("userId", id.toString());
         router.push(`/home/${homeId}`);
       } else {
-        setError("Login successful, but home information is missing. Please try again.");
+        setError(
+          "Login successful, but home information is missing. Please try again."
+        );
       }
     } catch (err) {
       console.error("Login error:", err);

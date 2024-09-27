@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { PlusCircle, Edit, Trash2 } from "lucide-react";
+import { apiUrl } from "@/config/api";
 
 type Item = {
   id: string;
@@ -61,12 +62,9 @@ export default function Home() {
     try {
       const token = localStorage.getItem("token");
       console.log("Fetching items for homeId:", homeId);
-      const response = await axios.get(
-        `http://localhost:3000/api/homes/${homeId}/items`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const response = await axios.get(apiUrl(`/homes/${homeId}/items`), {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       console.log("Items received:", response.data.length);
       setItems(response.data);
     } catch (err) {
@@ -87,7 +85,7 @@ export default function Home() {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
-        `http://localhost:3000/api/homes/${homeId}/items`,
+        apiUrl(`/homes/${homeId}/items`),
         { name: newItemName, description: newItemDescription },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -119,7 +117,7 @@ export default function Home() {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.put(
-        `http://localhost:3000/api/homes/${homeId}/items/${selectedItem.id}`,
+        apiUrl(`/homes/${homeId}/items/${selectedItem.id}`),
         selectedItem,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -141,10 +139,9 @@ export default function Home() {
     if (!selectedItem) return;
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(
-        `http://localhost:3000/api/homes/${homeId}/items/${selectedItem.id}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await axios.delete(apiUrl(`/homes/${homeId}/items/${selectedItem.id}`), {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setItems(items.filter((item) => item.id !== selectedItem.id));
       closeItemDialog();
     } catch (err: any) {
