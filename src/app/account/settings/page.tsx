@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,16 +13,50 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Toaster, toast } from "sonner";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function AccountSettings() {
+  const [userData, setUserData] = useState({ name: "", email: "" });
   const [newName, setNewName] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [newEmail, setNewEmail] = useState("");
+  const [isLoadingName, setIsLoadingName] = useState(false);
   const [isLoadingEmail, setIsLoadingEmail] = useState(false);
+  const [isLoadingUserData, setIsLoadingUserData] = useState(true);
+  const [showPasswords, setShowPasswords] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setShowPasswords(!showPasswords);
+  };
+
+  useEffect(() => {
+    fetchUserData();
+  }, []);
+
+  const fetchUserData = async () => {
+    try {
+      const response = await fetch("http://localhost:3000/api/users/me", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch user data");
+      }
+      const userData = await response.json();
+      setUserData(userData);
+      setNewName(userData.name);
+      setNewEmail(userData.email);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      toast.error("Failed to load user data");
+    } finally {
+      setIsLoadingUserData(false);
+    }
+  };
 
   const handleChangeName = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setIsLoadingName(true);
     try {
       console.log("Sending request with newName:", newName);
       const response = await fetch(
@@ -45,12 +79,14 @@ export default function AccountSettings() {
 
       const updatedUser = await response.json();
       toast.success(`Your name has been changed to ${updatedUser.name}`);
-      setNewName("");
+
+      setUserData((prevData) => ({ ...prevData, name: updatedUser.name }));
+      setNewName(updatedUser.name);
     } catch (error) {
       console.error("Error changing name:", error);
       toast.error("An error occurred while changing your name");
     } finally {
-      setIsLoading(false);
+      setIsLoadingName(false);
     }
   };
 
@@ -75,7 +111,9 @@ export default function AccountSettings() {
       }
       const updatedUser = await response.json();
       toast.success(`Your email has been changed to ${updatedUser.email}`);
-      setNewEmail("");
+
+      setUserData((prevData) => ({ ...prevData, email: updatedUser.email }));
+      setNewEmail(updatedUser.email);
     } catch (error: any) {
       console.error("Error changing email:", error);
       toast.error(
@@ -85,6 +123,10 @@ export default function AccountSettings() {
       setIsLoadingEmail(false);
     }
   };
+
+  // if (isLoadingUserData) {
+  //   return <div>Loading user data...</div>;
+  // }
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
@@ -102,7 +144,7 @@ export default function AccountSettings() {
               <Label htmlFor="name">Name</Label>
               <Input
                 id="name"
-                placeholder="Enter your new name"
+                placeholder={userData.name}
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 required
@@ -111,9 +153,11 @@ export default function AccountSettings() {
             <Button
               type="submit"
               className="w-full sm:w-auto"
-              disabled={isLoading}
+              disabled={
+                isLoadingName || newName === userData.name || newName === ""
+              }
             >
-              {isLoading ? "Saving..." : "Save Name"}
+              {isLoadingName ? "Saving..." : "Save Name"}
             </Button>
           </form>
         </CardContent>
@@ -130,14 +174,21 @@ export default function AccountSettings() {
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
-                placeholder="Enter your new email"
+                placeholder={userData.email}
                 type="email"
                 value={newEmail}
                 onChange={(e) => setNewEmail(e.target.value)}
                 required
               />
             </div>
-            <Button className="w-full sm:w-auto">Save Email</Button>
+            <Button
+              className="w-full sm:w-auto"
+              disabled={
+                isLoadingEmail || newEmail === userData.email || newEmail === ""
+              }
+            >
+              Save Email
+            </Button>
           </form>
         </CardContent>
       </Card>
@@ -151,29 +202,79 @@ export default function AccountSettings() {
           <form className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="current-password">Current Password</Label>
-              <Input
-                id="current-password"
-                type="password"
-                placeholder="Enter your current password"
-              />
+              <div className="relative">
+                <Input
+                  id="current-password"
+                  type={showPasswords ? "text" : "password"}
+                  placeholder="Enter your current password"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={togglePasswordVisibility}
+                  aria-label={showPasswords ? "Hide password" : "Show password"}
+                >
+                  {showPasswords ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="new-password">New Password</Label>
-              <Input
-                id="new-password"
-                type="password"
-                placeholder="Enter your new password"
-              />
+              <div className="relative">
+                <Input
+                  id="new-password"
+                  type={showPasswords ? "text" : "password"}
+                  placeholder="Enter your new password"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={togglePasswordVisibility}
+                  aria-label={showPasswords ? "Hide password" : "Show password"}
+                >
+                  {showPasswords ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirm-password">Confirm New Password</Label>
-              <Input
-                id="confirm-password"
-                type="password"
-                placeholder="Confirm your new password"
-              />
+              <div className="relative">
+                <Input
+                  id="confirm-password"
+                  type={showPasswords ? "text" : "password"}
+                  placeholder="Confirm your new password"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={togglePasswordVisibility}
+                  aria-label={showPasswords ? "Hide password" : "Show password"}
+                >
+                  {showPasswords ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
             </div>
-            <Button className="w-full sm:w-auto">Change Password</Button>
+            <Button type="submit" className="w-full sm:w-auto">
+              Change Password
+            </Button>
           </form>
         </CardContent>
       </Card>
