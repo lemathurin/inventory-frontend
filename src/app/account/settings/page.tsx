@@ -23,6 +23,10 @@ export default function AccountSettings() {
   const [isLoadingEmail, setIsLoadingEmail] = useState(false);
   const [isLoadingUserData, setIsLoadingUserData] = useState(true);
   const [showPasswords, setShowPasswords] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isLoadingPassword, setIsLoadingPassword] = useState(false);
 
   const togglePasswordVisibility = () => {
     setShowPasswords(!showPasswords);
@@ -124,6 +128,43 @@ export default function AccountSettings() {
     }
   };
 
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      toast.error("New passwords don't match");
+      return;
+    }
+    setIsLoadingPassword(true);
+    try {
+      const response = await fetch(
+        "http://localhost:3000/api/users/change-password",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({ currentPassword, newPassword }),
+        }
+      );
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to change password");
+      }
+      toast.success("Password changed successfully");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (error: any) {
+      console.error("Error changing password:", error);
+      toast.error(
+        error.message || "An error occurred while changing your password"
+      );
+    } finally {
+      setIsLoadingPassword(false);
+    }
+  };
+
   // if (isLoadingUserData) {
   //   return <div>Loading user data...</div>;
   // }
@@ -199,14 +240,17 @@ export default function AccountSettings() {
           <CardDescription>Update your account password</CardDescription>
         </CardHeader>
         <CardContent>
-          <form className="space-y-4">
+          <form onSubmit={handleChangePassword} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="current-password">Current Password</Label>
               <div className="relative">
                 <Input
                   id="current-password"
                   type={showPasswords ? "text" : "password"}
-                  placeholder="Enter your current password"
+                  // placeholder="Enter your current password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  required
                 />
                 <Button
                   type="button"
@@ -230,7 +274,10 @@ export default function AccountSettings() {
                 <Input
                   id="new-password"
                   type={showPasswords ? "text" : "password"}
-                  placeholder="Enter your new password"
+                  // placeholder="Enter your new password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
                 />
                 <Button
                   type="button"
@@ -254,7 +301,10 @@ export default function AccountSettings() {
                 <Input
                   id="confirm-password"
                   type={showPasswords ? "text" : "password"}
-                  placeholder="Confirm your new password"
+                  // placeholder="Confirm your new password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
                 />
                 <Button
                   type="button"
@@ -272,7 +322,17 @@ export default function AccountSettings() {
                 </Button>
               </div>
             </div>
-            <Button type="submit" className="w-full sm:w-auto">
+            <Button
+              type="submit"
+              className="w-full sm:w-auto"
+              disabled={
+                isLoadingPassword ||
+                !currentPassword ||
+                !newPassword ||
+                !confirmPassword ||
+                newPassword !== confirmPassword
+              }
+            >
               Change Password
             </Button>
           </form>
