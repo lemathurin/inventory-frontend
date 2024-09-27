@@ -1,0 +1,201 @@
+"use client";
+
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Toaster, toast } from "sonner";
+
+export default function AccountSettings() {
+  const [newName, setNewName] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [newEmail, setNewEmail] = useState("");
+  const [isLoadingEmail, setIsLoadingEmail] = useState(false);
+
+  const handleChangeName = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      console.log("Sending request with newName:", newName);
+      const response = await fetch(
+        "http://localhost:3000/api/users/change-name",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({ newName }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Server response:", errorText);
+        throw new Error(`Failed to change name: ${response.statusText}`);
+      }
+
+      const updatedUser = await response.json();
+      toast.success(`Your name has been changed to ${updatedUser.name}`);
+      setNewName("");
+    } catch (error) {
+      console.error("Error changing name:", error);
+      toast.error("An error occurred while changing your name");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleChangeEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoadingEmail(true);
+    try {
+      const response = await fetch(
+        "http://localhost:3000/api/users/change-email",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({ newEmail }),
+        }
+      );
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to change email");
+      }
+      const updatedUser = await response.json();
+      toast.success(`Your email has been changed to ${updatedUser.email}`);
+      setNewEmail("");
+    } catch (error: any) {
+      console.error("Error changing email:", error);
+      toast.error(
+        error.message || "An error occurred while changing your email"
+      );
+    } finally {
+      setIsLoadingEmail(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100 p-8">
+      <Toaster position="top-center" />
+      <h1 className="text-3xl font-bold mb-8">Account Settings</h1>
+
+      <Card className="mb-8">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl">Change Name</CardTitle>
+          <CardDescription>Update your account name</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleChangeName} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                placeholder="Enter your new name"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                required
+              />
+            </div>
+            <Button
+              type="submit"
+              className="w-full sm:w-auto"
+              disabled={isLoading}
+            >
+              {isLoading ? "Saving..." : "Save Name"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card className="mb-8">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl">Change Email</CardTitle>
+          <CardDescription>Update your account email</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleChangeEmail} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                placeholder="Enter your new email"
+                type="email"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+                required
+              />
+            </div>
+            <Button className="w-full sm:w-auto">Save Email</Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card className="mb-8">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl">Change Password</CardTitle>
+          <CardDescription>Update your account password</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="current-password">Current Password</Label>
+              <Input
+                id="current-password"
+                type="password"
+                placeholder="Enter your current password"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="new-password">New Password</Label>
+              <Input
+                id="new-password"
+                type="password"
+                placeholder="Enter your new password"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm-password">Confirm New Password</Label>
+              <Input
+                id="confirm-password"
+                type="password"
+                placeholder="Confirm your new password"
+              />
+            </div>
+            <Button className="w-full sm:w-auto">Change Password</Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl">Delete Account</CardTitle>
+          <CardDescription>
+            Permanently delete your account and all associated data
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">
+            Warning: This action cannot be undone. Please be certain.
+          </p>
+        </CardContent>
+        <CardFooter>
+          <Button variant="destructive" className="w-full sm:w-auto">
+            Delete Account
+          </Button>
+        </CardFooter>
+      </Card>
+    </div>
+  );
+}
