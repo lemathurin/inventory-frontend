@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import axios from "axios";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +17,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { apiUrl } from "@/config/api";
+import { useCreateHome } from "@/hooks/useCreateHome";
 
 const schema = z.object({
   name: z.string().min(1, { message: "Home name is required" }),
@@ -27,8 +26,8 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export default function Onboarding() {
-  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const { createHome, error } = useCreateHome();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -46,44 +45,9 @@ export default function Onboarding() {
   });
 
   const onSubmit = async (data: FormData) => {
-    try {
-      const token = localStorage.getItem("token");
-      const userId = localStorage.getItem("userId");
-      console.log("Token:", token);
-      console.log("UserId:", userId);
-
-      if (!token) {
-        setError("You are not authenticated. Please log in.");
-        router.push("/login");
-        return;
-      }
-
-      const response = await axios.post(
-        apiUrl(`/homes/create-home`),
-        { ...data, userId },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      console.log("Response:", response.data);
-
-      // Check if the response contains the home object with an id
-      if (response.data.home && response.data.home.id) {
-        const newHomeId = response.data.home.id;
-        // Store the new home id in localStorage if needed
-        localStorage.setItem("currentHomeId", newHomeId);
-        // Redirect to the new home page
-        router.push(`/home/${newHomeId}`);
-      } else {
-        setError("Home created but no ID returned. Please try again.");
-      }
-    } catch (err) {
-      console.error("Error:", err);
-      if (axios.isAxiosError(err) && err.response?.status === 403) {
-        setError("Authentication failed. Please log in again.");
-        router.push("/login");
-      } else {
-        setError("An error occurred while creating your home");
-      }
+    const newHomeId = await createHome(data);
+    if (newHomeId) {
+      router.push(`/home/${newHomeId}`);
     }
   };
 
