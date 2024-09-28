@@ -193,7 +193,7 @@ export default function AccountSettings() {
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
-      <Toaster position="top-center" />
+      <Toaster richColors position="bottom-right" />
       <h1 className="text-3xl font-bold mb-8">Account Settings</h1>
 
       <Card className="mb-8">

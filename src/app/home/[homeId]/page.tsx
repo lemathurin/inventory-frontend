@@ -160,6 +160,14 @@ export default function Home() {
             Your Home Inventory
           </CardTitle>
           <CardDescription>Manage your household items here</CardDescription>
+          <Button
+            onClick={() => {
+              router.push(`/home/${homeId}/settings`);
+            }}
+            aria-label="Settings"
+          >
+            Home settings
+          </Button>
         </CardHeader>
         <CardContent>
           {error && (

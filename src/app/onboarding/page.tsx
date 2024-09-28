@@ -59,7 +59,7 @@ export default function Onboarding() {
       }
 
       const response = await axios.post(
-        apiUrl(`/homes`),
+        apiUrl(`/homes/create-home`),
         { ...data, userId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
