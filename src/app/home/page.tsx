@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,50 +10,10 @@ import {
 } from "@/components/ui/card";
 import { Home as HomeIcon } from "lucide-react";
 import Link from "next/link";
-import { apiUrl } from "@/config/api";
-
-interface Home {
-  id: string;
-  name: string;
-}
+import { useFetchUserHomes } from "@/hooks/useFetchUserHomes";
 
 export default function HomeSelectorPage() {
-  const [homes, setHomes] = useState<Home[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchHomes = async () => {
-      try {
-        const token = localStorage.getItem("token");
-
-        if (!token) {
-          throw new Error("No authentication token found");
-        }
-
-        const response = await fetch(apiUrl("/homes/user-homes"), {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch homes");
-        }
-        const data = await response.json();
-        setHomes(data);
-      } catch (err) {
-        setError("Error fetching homes. Please try again later.");
-        console.error("Error fetching homes:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchHomes();
-  }, []);
+  const { homes, loading, error } = useFetchUserHomes();
 
   if (loading) {
     return <div>Loading...</div>;
@@ -65,7 +24,7 @@ export default function HomeSelectorPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gray-100">
       <main className="flex-grow container mx-auto px-4 py-8">
         <h2 className="text-3xl font-bold mb-6">Choose a Home</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
