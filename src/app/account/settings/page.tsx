@@ -115,11 +115,13 @@ export default function AccountSettings() {
 
       setUserData((prevData) => ({ ...prevData, email: updatedUser.email }));
       setNewEmail(updatedUser.email);
-    } catch (error: any) {
-      console.error("Error changing email:", error);
-      toast.error(
-        error.message || "An error occurred while changing your email"
-      );
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("Error changing email:", error);
+        toast.error(
+          error.message || "An error occurred while changing your email"
+        );
+      }
     } finally {
       setIsLoadingEmail(false);
     }
@@ -149,11 +151,13 @@ export default function AccountSettings() {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-    } catch (error: any) {
-      console.error("Error changing password:", error);
-      toast.error(
-        error.message || "An error occurred while changing your password"
-      );
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("Error changing password:", error);
+        toast.error(
+          error.message || "An error occurred while changing your password"
+        );
+      }
     } finally {
       setIsLoadingPassword(false);
     }
@@ -177,19 +181,21 @@ export default function AccountSettings() {
       // Clear local storage and redirect to home page or login page after successful deletion
       localStorage.removeItem("token");
       window.location.href = "/login";
-    } catch (error: any) {
-      console.error("Error deleting account:", error);
-      toast.error(
-        error.message || "An error occurred while deleting your account"
-      );
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("Error deleting account:", error);
+        toast.error(
+          error.message || "An error occurred while deleting your account"
+        );
+      }
     } finally {
       setIsDeleteModalOpen(false);
     }
   };
 
-  // if (isLoadingUserData) {
-  //   return <div>Loading user data...</div>;
-  // }
+  if (isLoadingUserData) {
+    return <div>Loading user data...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
@@ -388,7 +394,7 @@ export default function AccountSettings() {
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDeleteAccount}
-        currentPassword={currentPassword}
+        // currentPassword={currentPassword}
       />
     </div>
   );

@@ -109,12 +109,12 @@ export default function Login() {
             <Button type="submit" className="w-full">
               Login
             </Button>
-            <p className="text-sm text-center text-gray-600">
-              Don't have an account?{" "}
+            <span className="text-sm text-center text-gray-600">
+              Don&#39;t have an account?{" "}
               <Link href="/signup" className="text-primary hover:underline">
                 Sign up
               </Link>
-            </p>
+            </span>
           </CardFooter>
         </form>
       </Card>

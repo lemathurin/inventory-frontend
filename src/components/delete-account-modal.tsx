@@ -15,15 +15,15 @@ interface DeleteAccountModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: (password: string) => Promise<void>;
-  currentPassword: string;
+  // currentPassword: string;
 }
 
 export function DeleteAccountModal({
   isOpen,
   onClose,
   onConfirm,
-  currentPassword,
-}: DeleteAccountModalProps) {
+}: // currentPassword,
+DeleteAccountModalProps) {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 

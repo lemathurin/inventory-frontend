@@ -34,7 +34,7 @@ export default function Onboarding() {
     if (!token) {
       router.push("/login");
     }
-  }, []);
+  }, [router]);
 
   const {
     register,
@@ -56,7 +56,7 @@ export default function Onboarding() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl font-bold">Welcome!</CardTitle>
-          <CardDescription>Let's set up your home</CardDescription>
+          <CardDescription>Let&#39;s set up your home</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-4">

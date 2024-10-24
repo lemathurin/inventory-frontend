@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,7 +56,7 @@ export default function Home() {
 
   useEffect(() => {
     fetchItems();
-  }, [homeId]);
+  }, []);
 
   const fetchItems = async () => {
     try {
@@ -92,11 +92,14 @@ export default function Home() {
       setItems([...items, response.data]);
       setNewItemName("");
       setNewItemDescription("");
-    } catch (err: any) {
-      console.error("Error adding item:", err);
-      setError(
-        "Failed to add item: " + (err.response?.data?.error || err.message)
-      );
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        console.error("Error adding item:", error);
+        setError(
+          "Failed to add item: " +
+            (error.response?.data?.error || error.message)
+        );
+      }
     }
   };
 
@@ -127,11 +130,14 @@ export default function Home() {
         )
       );
       closeItemDialog();
-    } catch (err: any) {
-      console.error("Error updating item:", err);
-      setError(
-        "Failed to update item: " + (err.response?.data?.error || err.message)
-      );
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        console.error("Error updating item:", error);
+        setError(
+          "Failed to update item: " +
+            (error.response?.data?.error || error.message)
+        );
+      }
     }
   };
 
@@ -144,11 +150,14 @@ export default function Home() {
       });
       setItems(items.filter((item) => item.id !== selectedItem.id));
       closeItemDialog();
-    } catch (err: any) {
-      console.error("Error deleting item:", err);
-      setError(
-        "Failed to delete item: " + (err.response?.data?.error || err.message)
-      );
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        console.error("Error deleting item:", error);
+        setError(
+          "Failed to delete item: " +
+            (error.response?.data?.error || error.message)
+        );
+      }
     }
   };
 
