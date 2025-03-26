@@ -1,21 +1,45 @@
 "use client";
 
-import { usePathname } from "next/navigation";
-import LogoutButton from "./LogoutButton";
-import SettingsButton from "./SettingsButton";
+import { usePathname, useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { LogOut, Settings, PanelLeftClose, PanelLeft } from "lucide-react";
+import { useSidebar } from "@/components/ui/sidebar";
 
 export default function ClientLogoutButton() {
   const pathname = usePathname();
+  const router = useRouter();
   const hideOnPaths = ["/", "/login", "/signup"];
+  const { toggleSidebar, state } = useSidebar();
 
   if (hideOnPaths.includes(pathname)) {
     return null;
   }
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+    router.push("/login");
+  };
+
   return (
-    <>
-      <SettingsButton />
-      <LogoutButton />
-    </>
+    <div className="fixed top-4 right-4 flex gap-2">
+      <Button onClick={toggleSidebar} size="icon" aria-label="Toggle Sidebar">
+        {state === "expanded" ? (
+          <PanelLeftClose className="h-5 w-5" />
+        ) : (
+          <PanelLeft className="h-5 w-5" />
+        )}
+      </Button>
+      <Button
+        onClick={() => router.push("/account/settings")}
+        size="icon"
+        aria-label="Settings"
+      >
+        <Settings className="h-5 w-5" />
+      </Button>
+      <Button onClick={handleLogout} size="icon" aria-label="Logout">
+        <LogOut className="h-5 w-5" />
+      </Button>
+    </div>
   );
 }
