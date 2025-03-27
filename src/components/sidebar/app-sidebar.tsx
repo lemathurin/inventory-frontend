@@ -1,6 +1,7 @@
 "use client";
 
-import * as React from "react";
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import {
   AudioWaveform,
   BookOpen,
@@ -17,7 +18,7 @@ import {
 import { NavMain } from "@/components/sidebar/nav-main";
 // import { NavProjects } from "@/components/nav-projects";
 import { NavUser } from "@/components/sidebar/nav-user";
-import { TeamSwitcher } from "@/components/sidebar/team-switcher";
+import { HomeSwitcher } from "@/components/sidebar/home-switcher";
 import {
   Sidebar,
   SidebarContent,
@@ -25,6 +26,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { getCurrentUser } from "@/app/domains/user/endpoints/getCurrentUser";
 
 // This is sample data.
 const data = {
@@ -157,17 +159,45 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const pathname = usePathname();
+  const hideOnPaths = ["/", "/login", "/signup", "/onboarding"];
+  const [user, setUser] = useState(data.user);
+  const [userHomes, setUserHomes] = useState([]);
+
+  useEffect(() => {
+    initialize();
+  }, []);
+
+  async function initialize() {
+    const userData = await getCurrentUser();
+    if (userData) {
+      setUser(userData);
+      const transformedHomes = userData.homes.map(
+        (home: { home: { name: string; address: string } }) => ({
+          name: home.home.name,
+          address: home.home.address,
+        })
+      );
+      setUserHomes(transformedHomes);
+    }
+    console.log("Sidebar user data:", userData);
+  }
+
+  if (hideOnPaths.includes(pathname)) {
+    return null;
+  }
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <HomeSwitcher homes={userHomes} />
       </SidebarHeader>
-      <SidebarContent>
-        <NavMain items={data.navMain} />
-        {/* <NavProjects projects={data.projects} /> */}
-      </SidebarContent>
+      {/* <SidebarContent> */}
+      {/* <NavMain items={data.navMain} /> */}
+      {/* <NavProjects projects={data.projects} /> */}
+      {/* </SidebarContent> */}
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={user} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
