@@ -43,7 +43,7 @@ export default function Login() {
 
   const onSubmit = async (data: FormData) => {
     try {
-      const response = await axios.post(apiUrl(`/users/login`), data);
+      const response = await axios.post(apiUrl(`/user/login`), data);
 
       console.log("Full response:", response);
       console.log("Response data:", response.data);

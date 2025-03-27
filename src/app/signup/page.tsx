@@ -44,7 +44,7 @@ export default function SignUp() {
 
   const onSubmit = async (data: FormData) => {
     try {
-      const response = await axios.post(apiUrl(`/users/register`), data);
+      const response = await axios.post(apiUrl(`/user/register`), data);
 
       console.log("Full response:", response);
       console.log("Response data:", response.data);
