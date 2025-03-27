@@ -47,6 +47,7 @@ type Item = {
 export default function Home() {
   const { homeId } = useParams();
   const [items, setItems] = useState<Item[]>([]);
+  const [homeName, setHomeName] = useState("");
   const [newItemName, setNewItemName] = useState("");
   const [newItemDescription, setNewItemDescription] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -56,6 +57,7 @@ export default function Home() {
 
   useEffect(() => {
     fetchItems();
+    fetchHome();
   }, []);
 
   const fetchItems = async () => {
@@ -70,6 +72,19 @@ export default function Home() {
     } catch (err) {
       setError("Failed to fetch items");
       console.error(err);
+    }
+  };
+
+  const fetchHome = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(apiUrl(`/homes/${homeId}`), {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setHomeName(response.data.name);
+      console.log("Home data", response.data);
+    } catch (err) {
+      console.error("Failed to fetch home:", err);
     }
   };
 
@@ -166,7 +181,7 @@ export default function Home() {
       <Card className="max-w-4xl mx-auto">
         <CardHeader>
           <CardTitle className="text-3xl font-bold">
-            Your Home Inventory
+            {homeName ? `${homeName} Inventory` : "Your Home Inventory"}
           </CardTitle>
           <CardDescription>Manage your household items here</CardDescription>
           <Button
