@@ -41,7 +41,7 @@ export default function AccountSettings() {
 
   const fetchUserData = async () => {
     try {
-      const response = await fetch(apiUrl("/users/me"), {
+      const response = await fetch(apiUrl("/user/me"), {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -66,7 +66,7 @@ export default function AccountSettings() {
     setIsLoadingName(true);
     try {
       console.log("Sending request with newName:", newName);
-      const response = await fetch(apiUrl("/users/change-name"), {
+      const response = await fetch(apiUrl("/user/change-name"), {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -98,7 +98,7 @@ export default function AccountSettings() {
     e.preventDefault();
     setIsLoadingEmail(true);
     try {
-      const response = await fetch(apiUrl("/users/change-email"), {
+      const response = await fetch(apiUrl("/user/change-email"), {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -135,7 +135,7 @@ export default function AccountSettings() {
     }
     setIsLoadingPassword(true);
     try {
-      const response = await fetch(apiUrl("/users/change-password"), {
+      const response = await fetch(apiUrl("/user/change-password"), {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -165,7 +165,7 @@ export default function AccountSettings() {
 
   const handleDeleteAccount = async (password: string) => {
     try {
-      const response = await fetch(apiUrl("/users/delete-account"), {
+      const response = await fetch(apiUrl("/user/delete-account"), {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
