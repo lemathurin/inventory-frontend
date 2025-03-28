@@ -12,7 +12,7 @@ export async function getCurrentUser(): Promise<UserModel | null> {
         }
         
         const userData: UserModel = await response.json();
-        console.log("Fetched user data:", userData);
+        // console.log("Fetched user data:", userData);
         return userData;
     } catch (error) {
         console.error("Error fetching user data:", error);

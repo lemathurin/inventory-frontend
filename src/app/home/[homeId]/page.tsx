@@ -54,13 +54,13 @@ export default function Home() {
     isLoading: areItemsLoading,
   } = useGetItemsOfHome(homeId);
 
-  useEffect(() => {
-    if (isInHome) {
-      console.log("we're in a home, buddy boy");
-    } else {
-      console.log("broky");
-    }
-  }, [isInHome]);
+  // useEffect(() => {
+  //   if (isInHome) {
+  //     console.log("we're in a home, buddy boy");
+  //   } else {
+  //     console.log("broken");
+  //   }
+  // }, [isInHome]);
 
   const addItem = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -161,14 +161,6 @@ export default function Home() {
             {homeData ? homeData.name : "Your Home Inventory"}
           </CardTitle>
           <CardDescription>Manage your household items here</CardDescription>
-          <Button
-            onClick={() => {
-              router.push(`/home/${homeId}/settings`);
-            }}
-            aria-label="Settings"
-          >
-            Home settings
-          </Button>
         </CardHeader>
         <CardContent>
           {error && (

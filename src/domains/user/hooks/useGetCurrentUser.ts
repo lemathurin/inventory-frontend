@@ -5,16 +5,15 @@ import { UserModel } from "../user.types";
 export function useGetCurrentUser() {
   const [user, setUser] = useState<UserModel | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const userData = await getCurrentUser();
-        // console.log("Setting user data:", userData);
         setUser(userData);
+        console.log("Fetched user data with useGetCurrentUser:", userData);
       } catch (err) {
-        setError(err as Error);
+        console.error('Error fetching current user:', err);
       } finally {
         setLoading(false);
       }
@@ -23,5 +22,5 @@ export function useGetCurrentUser() {
     fetchUser();
   }, []);
 
-  return { user, loading, error };
+  return { user, loading };
 }
