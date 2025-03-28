@@ -1,6 +1,6 @@
 import { apiUrl } from "@/config/api";
 
-export async function deleteAccount(password: string): Promise<void> {
+export async function deleteUser(password: string): Promise<void> {
     const response = await fetch(apiUrl("/user/delete-account"), {
         method: "DELETE",
         credentials: 'include',

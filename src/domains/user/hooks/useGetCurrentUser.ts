@@ -3,14 +3,14 @@ import { getCurrentUser } from "../endpoints/getCurrentUser";
 import { UserModel } from "../user.types";
 
 export function useGetCurrentUser() {
-  const [user, setUser] = useState<UserModel | null>(null);
+  const [userData, setUserData] = useState<UserModel | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const userData = await getCurrentUser();
-        setUser(userData);
+        setUserData(userData);
         console.log("Fetched user data with useGetCurrentUser:", userData);
       } catch (err) {
         console.error('Error fetching current user:', err);
@@ -22,5 +22,5 @@ export function useGetCurrentUser() {
     fetchUser();
   }, []);
 
-  return { user, loading };
+  return { userData, loading };
 }

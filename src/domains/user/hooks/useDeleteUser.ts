@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { deleteAccount } from "../endpoints/deleteAccount";
+import { deleteUser } from "../endpoints/deleteUser";
 
-export function useDeleteAccount() {
+export function useDeleteUser() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -9,7 +9,7 @@ export function useDeleteAccount() {
         setIsLoading(true);
         setError(null);
         try {
-            await deleteAccount(password);
+            await deleteUser(password);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Failed to delete account");
             throw err;
