@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { ChevronsUpDown, Plus } from "lucide-react";
+import { ChevronsUpDown, Plus, Settings } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 import {
   DropdownMenu,
@@ -24,16 +25,19 @@ export function HomeSwitcher({
   homes,
 }: {
   homes: {
-    id: string;
-    name: string;
-    address?: string;
+    homeId: string;
+    home: {
+      name: string;
+      address: string;
+    };
   }[];
 }) {
   const { isMobile } = useSidebar();
   const { homeId } = useParams();
+  const router = useRouter();
 
   // Find the active home based on homeId
-  const activeHome = homes.find((home) => home.id === homeId) || homes[0];
+  const activeHome = homes.find((home) => home.homeId === homeId) || homes[0];
 
   if (!activeHome) {
     return null;
@@ -53,9 +57,11 @@ export function HomeSwitcher({
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">
-                  {activeHome.name}
+                  {activeHome.home.name}
                 </span>
-                <span className="truncate text-xs">{activeHome.address}</span>
+                <span className="truncate text-xs">
+                  {activeHome.home.address}
+                </span>
               </div>
               <ChevronsUpDown className="ml-auto" />
             </SidebarMenuButton>
@@ -70,20 +76,37 @@ export function HomeSwitcher({
               Homes
             </DropdownMenuLabel>
             {homes.map((home, index) => (
-              <DropdownMenuItem key={home.id} className="gap-2 p-2">
+              <DropdownMenuItem
+                key={home.homeId}
+                className="gap-2 p-2"
+                onClick={() => router.push(`/home/${home.homeId}`)}
+              >
                 <div className="flex size-6 items-center justify-center rounded-sm border">
                   {/* <home.logo className="size-4 shrink-0" /> */}
                 </div>
-                {home.name}
+                {home.home.name}
                 <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="gap-2 p-2"
+              onClick={() => router.push(`/home/${activeHome.homeId}/settings`)}
+            >
+              <div className="flex size-6 items-center justify-center rounded-md border bg-background">
+                <Settings className="size-4" />
+              </div>
+              <div className="font-medium text-muted-foreground">
+                Manage this home
+              </div>
+            </DropdownMenuItem>
             <DropdownMenuItem className="gap-2 p-2">
               <div className="flex size-6 items-center justify-center rounded-md border bg-background">
                 <Plus className="size-4" />
               </div>
-              <div className="font-medium text-muted-foreground">Add home</div>
+              <div className="font-medium text-muted-foreground">
+                Join or create a home
+              </div>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

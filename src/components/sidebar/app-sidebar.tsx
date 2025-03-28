@@ -25,7 +25,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { getCurrentUser } from "@/domains/user/endpoints/getCurrentUser";
+import { useGetCurrentUser } from "@/domains/user/hooks/useGetCurrentUser";
 
 // This is sample data.
 const data = {
@@ -160,36 +160,20 @@ const data = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
   const hideOnPaths = ["/", "/login", "/signup", "/onboarding"];
-  const [user, setUser] = useState(data.user);
-  const [userHomes, setUserHomes] = useState([]);
-
-  useEffect(() => {
-    initialize();
-  }, []);
-
-  async function initialize() {
-    const userData = await getCurrentUser();
-    if (userData) {
-      setUser(userData);
-      const transformedHomes = userData.homes.map(
-        (home: { home: { name: string; address: string } }) => ({
-          name: home.home.name,
-          address: home.home.address,
-        })
-      );
-      setUserHomes(transformedHomes);
-    }
-    console.log("Sidebar user data:", userData);
-  }
+  const { user, loading } = useGetCurrentUser();
 
   if (hideOnPaths.includes(pathname)) {
+    return null;
+  }
+
+  if (loading || !user) {
     return null;
   }
 
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <HomeSwitcher homes={userHomes} />
+        <HomeSwitcher homes={user?.homes || []} />
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
