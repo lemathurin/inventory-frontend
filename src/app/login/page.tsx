@@ -43,16 +43,16 @@ export default function Login() {
 
   const onSubmit = async (data: FormData) => {
     try {
-      const response = await axios.post(apiUrl(`/user/login`), data);
+      const response = await axios.post(apiUrl(`/user/login`), data, {
+        withCredentials: true, // Ensure cookies are sent and received
+      });
 
       console.log("Full response:", response);
       console.log("Response data:", response.data);
 
-      const { token, id, homeId } = response.data;
+      const { id, homeId } = response.data;
       console.log("homeId received:", homeId);
-      if (token && homeId) {
-        localStorage.setItem("token", token);
-        localStorage.setItem("userId", id.toString());
+      if (homeId) {
         router.push(`/home/${homeId}`);
       } else {
         setError(
