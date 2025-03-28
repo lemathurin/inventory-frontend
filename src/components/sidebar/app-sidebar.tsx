@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 
 import { NavMain } from "@/components/sidebar/nav-main";
-// import { NavProjects } from "@/components/nav-projects";
 import { NavUser } from "@/components/sidebar/nav-user";
 import { HomeSwitcher } from "@/components/sidebar/home-switcher";
 import {
@@ -26,7 +25,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { getCurrentUser } from "@/app/domains/user/endpoints/getCurrentUser";
+import { getCurrentUser } from "@/domains/user/endpoints/getCurrentUser";
 
 // This is sample data.
 const data = {
@@ -192,10 +191,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <HomeSwitcher homes={userHomes} />
       </SidebarHeader>
-      {/* <SidebarContent> */}
-      {/* <NavMain items={data.navMain} /> */}
-      {/* <NavProjects projects={data.projects} /> */}
-      {/* </SidebarContent> */}
+      <SidebarContent>
+        <NavMain items={data.navMain} />
+      </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />
       </SidebarFooter>
