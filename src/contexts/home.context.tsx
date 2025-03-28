@@ -44,27 +44,18 @@ export function HomeProvider({ children }: { children: ReactNode }) {
   const isHomeLocation = pathname?.startsWith("/home/") ?? false;
 
   useEffect(() => {
-    const fetchHome = async () => {
-      if (!homeId) {
-        setCurrentHome(null);
-        return;
-      }
-
-      try {
-        setIsLoading(true);
-        const data = await getHomeById(homeId);
-        setCurrentHome(data);
-        setError(null);
-      } catch (err) {
-        setError(err as Error);
-        setCurrentHome(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchHome();
-  }, [homeId]);
+    // This will be to check if the user is allowed to view this home
+    if (isInHome) {
+      console.log("Entered home", {
+        isInHome,
+        name: currentHome.name,
+        homeId,
+        currentHome,
+      });
+    } else {
+      console.log("Left room", { isInHome, homeId, currentHome });
+    }
+  }, [currentHome]);
 
   //   const updateHome = async (data: Partial<Home>) => {
   // Implement update logic here
@@ -73,8 +64,8 @@ export function HomeProvider({ children }: { children: ReactNode }) {
   //   };
 
   return (
-    <HomeContext.Provider 
-    value={{
+    <HomeContext.Provider
+      value={{
         isInHome,
         isHomeLocation,
         currentHome,
