@@ -1,10 +1,16 @@
-export type Item = {
+export type ItemModel = {
     id: string;
+    public: boolean;
     name: string;
     description?: string;
-    purchaseDate?: string;
+    purchaseDate?: Date;
     price?: number;
-    warranty?: number;
-    homeId: string;
+    hasWarranty?: boolean;
+    warrantyType?: string;
+    warrantyLength?: number;
+    createdAt: Date;
+    updatedAt: Date;
+    homeId?: string;
     ownerId: string;
+    mediaUrls?: string[];
 };
