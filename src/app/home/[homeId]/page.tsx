@@ -32,65 +32,38 @@ import {
 import { Label } from "@/components/ui/label";
 import { PlusCircle, Edit, Trash2 } from "lucide-react";
 import { apiUrl } from "@/config/api";
-
-type Item = {
-  id: string;
-  name: string;
-  description?: string;
-  purchaseDate?: string;
-  price?: number;
-  warranty?: number;
-  homeId: string;
-  ownerId: string;
-};
+import { useGetItemsOfHome } from "@/domains/item/hooks/useGetItemsOfHome";
+import { useHomeContext } from "@/contexts/home.context";
+import { ItemModel } from "@/domains/item/item.types";
+import { useGetHomeById } from "@/domains/home/hooks/useGetHomeById";
 
 export default function Home() {
-  const { homeId } = useParams();
-  const [items, setItems] = useState<Item[]>([]);
-  const [homeName, setHomeName] = useState("");
+  const { homeId } = useParams<{ homeId: string }>();
+  const { homeData, isLoading } = useGetHomeById(homeId);
+  const { isInHome, currentHome } = useHomeContext();
+  const router = useRouter();
   const [newItemName, setNewItemName] = useState("");
   const [newItemDescription, setNewItemDescription] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const [selectedItem, setSelectedItem] = useState<ItemModel | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const router = useRouter();
+
+  const {
+    items,
+    setItems,
+    isLoading: areItemsLoading,
+  } = useGetItemsOfHome(homeId);
 
   useEffect(() => {
-    fetchItems();
-    fetchHome();
-  }, []);
-
-  const fetchItems = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      console.log("Fetching items for homeId:", homeId);
-      const response = await axios.get(apiUrl(`/homes/${homeId}/items`), {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      console.log("Items received:", response.data.length);
-      setItems(response.data);
-    } catch (err) {
-      setError("Failed to fetch items");
-      console.error(err);
+    if (isInHome) {
+      console.log("we're in a home, buddy boy");
+    } else {
+      console.log("broky");
     }
-  };
-
-  const fetchHome = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(apiUrl(`/homes/${homeId}`), {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setHomeName(response.data.name);
-      console.log("Home data", response.data);
-    } catch (err) {
-      console.error("Failed to fetch home:", err);
-    }
-  };
+  }, [isInHome]);
 
   const addItem = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
 
     if (!newItemName.trim()) {
       setError("Item name cannot be empty");
@@ -98,11 +71,15 @@ export default function Home() {
     }
 
     try {
-      const token = localStorage.getItem("token");
       const response = await axios.post(
-        apiUrl(`/homes/${homeId}/items`),
-        { name: newItemName, description: newItemDescription },
-        { headers: { Authorization: `Bearer ${token}` } }
+        apiUrl(`/home/${homeId}/item`),
+        {
+          name: newItemName,
+          description: newItemDescription,
+        },
+        {
+          withCredentials: true,
+        }
       );
       setItems([...items, response.data]);
       setNewItemName("");
@@ -118,7 +95,7 @@ export default function Home() {
     }
   };
 
-  const openItemDialog = (item: Item) => {
+  const openItemDialog = (item: ItemModel) => {
     setSelectedItem(item);
     setIsDialogOpen(true);
   };
@@ -133,11 +110,12 @@ export default function Home() {
     if (!selectedItem) return;
 
     try {
-      const token = localStorage.getItem("token");
       const response = await axios.put(
-        apiUrl(`/homes/${homeId}/items/${selectedItem.id}`),
+        apiUrl(`/home/${homeId}/item/${selectedItem.id}`),
         selectedItem,
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          withCredentials: true,
+        }
       );
       setItems(
         items.map((item) =>
@@ -159,9 +137,8 @@ export default function Home() {
   const deleteItem = async () => {
     if (!selectedItem) return;
     try {
-      const token = localStorage.getItem("token");
-      await axios.delete(apiUrl(`/homes/${homeId}/items/${selectedItem.id}`), {
-        headers: { Authorization: `Bearer ${token}` },
+      await axios.delete(apiUrl(`/home/${homeId}/item/${selectedItem.id}`), {
+        withCredentials: true,
       });
       setItems(items.filter((item) => item.id !== selectedItem.id));
       closeItemDialog();
@@ -181,7 +158,7 @@ export default function Home() {
       <Card className="max-w-4xl mx-auto">
         <CardHeader>
           <CardTitle className="text-3xl font-bold">
-            {homeName ? `${homeName} Inventory` : "Your Home Inventory"}
+            {homeData ? homeData.name : "Your Home Inventory"}
           </CardTitle>
           <CardDescription>Manage your household items here</CardDescription>
           <Button
@@ -199,7 +176,9 @@ export default function Home() {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          {items.length === 0 ? (
+          {areItemsLoading ? (
+            <p className="text-center text-gray-500 my-4">Loading items...</p>
+          ) : items.length === 0 ? (
             <p className="text-center text-gray-500 my-4">
               You have no items yet. Add your first item below!
             </p>
@@ -255,7 +234,7 @@ export default function Home() {
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="bg-white sm:max-w-[425px]">
+        <DialogContent className="bg-white text-black sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Edit Item</DialogTitle>
           </DialogHeader>
