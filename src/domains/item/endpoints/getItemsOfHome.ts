@@ -1,9 +1,9 @@
 import { apiUrl } from "@/config/api";
-import { Item } from "../item.types"
+import { ItemModel } from "../item.types"
 
-export async function getItemsOfHome(homeId: string): Promise<Item[]> {
+export async function getItemsOfHome(homeId: string): Promise<ItemModel[]> {
   try {
-    const response = await fetch(apiUrl(`/homes/${homeId}/items`), {
+    const response = await fetch(apiUrl(`/home/${homeId}/items`), {
       credentials: 'include',
     });
     
@@ -11,7 +11,7 @@ export async function getItemsOfHome(homeId: string): Promise<Item[]> {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     
-    const items: Item[] = await response.json();
+    const items: ItemModel[] = await response.json();
     return items;
   } catch (error) {
     console.error("Error fetching items:", error);

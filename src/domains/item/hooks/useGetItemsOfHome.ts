@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 import { getItemsOfHome } from '../endpoints/getItemsOfHome';
-import { Item } from '../item.types';
+import { ItemModel } from '../item.types';
 
 export function useGetItemsOfHome(homeId: string) {
-  const [items, setItems] = useState<Item[]>([]);
+  const [items, setItems] = useState<ItemModel[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -13,7 +12,7 @@ export function useGetItemsOfHome(homeId: string) {
         const itemsData = await getItemsOfHome(homeId);
         setItems(itemsData);
       } catch (err) {
-        setError(err as Error);
+        console.error('Error fetching items:', err);
       } finally {
         setIsLoading(false);
       }
@@ -24,5 +23,5 @@ export function useGetItemsOfHome(homeId: string) {
     }
   }, [homeId]);
 
-  return { items, setItems, isLoading, error };
+  return { items, setItems, isLoading };
 }
