@@ -17,7 +17,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useCreateHome } from "@/hooks/useCreateHome";
+import { useCreateHome } from "@/domains/home/hooks/useCreateHome";
 
 const schema = z.object({
   name: z.string().min(1, { message: "Home name is required" }),
@@ -28,14 +28,7 @@ type FormData = z.infer<typeof schema>;
 
 export default function Onboarding() {
   const router = useRouter();
-  const { createHome, error } = useCreateHome();
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      router.push("/login");
-    }
-  }, [router]);
+  const { createNewHome, isLoading, error } = useCreateHome();
 
   const {
     register,
@@ -45,12 +38,16 @@ export default function Onboarding() {
     resolver: zodResolver(schema),
   });
 
-  const onSubmit = async (data: FormData) => {
-    const newHomeId = await createHome(data);
-    if (newHomeId) {
-      router.push(`/home/${newHomeId}`);
+  async function onSubmit(data: FormData) {
+    try {
+      const response = await createNewHome(data.name, data.address);
+      if (response?.home?.id) {
+        router.push(`/home/${response.home.id}`);
+      }
+    } catch (err) {
+      console.error("Home creation error:", err);
     }
-  };
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -92,8 +89,8 @@ export default function Onboarding() {
             </div>
           </CardContent>
           <CardFooter>
-            <Button type="submit" className="w-full">
-              Create Home
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Creating Home..." : "Create Home"}
             </Button>
           </CardFooter>
         </form>

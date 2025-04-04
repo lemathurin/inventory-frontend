@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import axios from "axios";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -19,7 +18,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { apiUrl } from "@/config/api";
+import { useCreateUser } from "@/domains/user/hooks/useCreateUser";
 
 const schema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
@@ -34,6 +33,7 @@ type FormData = z.infer<typeof schema>;
 export default function SignUp() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const { createNewUser, isLoading } = useCreateUser();
   const {
     register,
     handleSubmit,
@@ -42,30 +42,15 @@ export default function SignUp() {
     resolver: zodResolver(schema),
   });
 
-  const onSubmit = async (data: FormData) => {
+  async function onSubmit(data: FormData) {
     try {
-      const response = await axios.post(apiUrl(`/user/register`), data);
-
-      console.log("Full response:", response);
-      console.log("Response data:", response.data);
-
-      const { token, id } = response.data;
-      if (token) {
-        localStorage.setItem("token", token);
-        localStorage.setItem("userId", id.toString());
-        console.log("Token stored:", token);
-        console.log("User ID stored:", id);
-        router.push("/onboarding");
-      } else {
-        setError(
-          "Registration successful, but no token received. Please try logging in."
-        );
-      }
+      await createNewUser(data.name, data.email, data.password);
+      router.push("/onboarding");
     } catch (err) {
       console.error("Signup error:", err);
       setError("An error occurred during sign up");
     }
-  };
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -116,8 +101,8 @@ export default function SignUp() {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full">
-              Sign Up
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Signing Up..." : "Sign Up"}
             </Button>
             <p className="text-sm text-center text-gray-600">
               Already have an account?{" "}

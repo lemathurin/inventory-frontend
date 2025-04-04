@@ -160,26 +160,26 @@ const data = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
   const hideOnPaths = ["/", "/login", "/signup", "/onboarding"];
-  const { user, loading } = useGetCurrentUser();
+  const { userData, loading } = useGetCurrentUser();
 
   if (hideOnPaths.includes(pathname)) {
     return null;
   }
 
-  if (loading || !user) {
+  if (loading || !userData) {
     return null;
   }
 
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <HomeSwitcher homes={user?.homes || []} />
+        <HomeSwitcher homes={userData?.homes || []} />
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={user} />
+        <NavUser user={userData} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

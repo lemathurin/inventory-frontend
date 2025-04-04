@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import axios from "axios";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,6 +33,8 @@ type FormData = z.infer<typeof schema>;
 export default function Login() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect") || "/";
   const {
     register,
     handleSubmit,
@@ -44,7 +46,7 @@ export default function Login() {
   const onSubmit = async (data: FormData) => {
     try {
       const response = await axios.post(apiUrl(`/user/login`), data, {
-        withCredentials: true, // Ensure cookies are sent and received
+        withCredentials: true,
       });
 
       console.log("Full response:", response);
@@ -52,13 +54,10 @@ export default function Login() {
 
       const { id, homeId } = response.data;
       console.log("homeId received:", homeId);
-      if (homeId) {
-        router.push(`/home/${homeId}`);
-      } else {
-        setError(
-          "Login successful, but home information is missing. Please try again."
-        );
-      }
+
+      // Redirect to the intended page or home
+      const target = homeId ? `/home/${homeId}` : redirect;
+      window.location.href = target;
     } catch (err) {
       console.error("Login error:", err);
       setError(

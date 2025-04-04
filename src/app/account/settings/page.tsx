@@ -21,7 +21,7 @@ import {
   useUpdateUserEmail,
   useUpdateUserPassword,
 } from "@/domains/user/hooks/useUpdateUser";
-import { useDeleteAccount } from "@/domains/user/hooks/useDeleteAccount";
+import { useDeleteUser } from "@/domains/user/hooks/useDeleteUser";
 
 export default function AccountSettings() {
   const { userData } = useGetCurrentUser();
@@ -29,8 +29,7 @@ export default function AccountSettings() {
   const { updateEmail, isLoading: isUpdatingEmail } = useUpdateUserEmail();
   const { updatePassword, isLoading: isUpdatingPassword } =
     useUpdateUserPassword();
-  const { deleteUserAccount, isLoading: isDeletingAccount } =
-    useDeleteAccount();
+  const { deleteUserAccount, isLoading: isDeletingAccount } = useDeleteUser();
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [showPasswords, setShowPasswords] = useState(false);
@@ -117,11 +116,9 @@ export default function AccountSettings() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
+    <div className="min-h-screen p-8">
       <Toaster richColors position="bottom-right" />
-      <h1 className="text-gray-800 text-3xl font-bold mb-8">
-        Account Settings
-      </h1>
+      <h1 className="text-primary text-3xl font-bold mb-8">Account Settings</h1>
 
       <Card className="mb-8">
         <CardHeader className="space-y-1">

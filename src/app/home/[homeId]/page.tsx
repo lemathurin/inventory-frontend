@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import axios, { AxiosError } from "axios";
-import { useRouter, useParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -33,34 +33,19 @@ import { Label } from "@/components/ui/label";
 import { PlusCircle, Edit, Trash2 } from "lucide-react";
 import { apiUrl } from "@/config/api";
 import { useGetItemsOfHome } from "@/domains/item/hooks/useGetItemsOfHome";
-import { useHomeContext } from "@/contexts/home.context";
 import { ItemModel } from "@/domains/item/item.types";
 import { useGetHomeById } from "@/domains/home/hooks/useGetHomeById";
 
-export default function Home() {
+export default function HomePage() {
   const { homeId } = useParams<{ homeId: string }>();
-  const { homeData, isLoading } = useGetHomeById(homeId);
-  const { isInHome, currentHome } = useHomeContext();
-  const router = useRouter();
+  const { homeData } = useGetHomeById(homeId);
+  const { itemsData } = useGetItemsOfHome(homeId);
   const [newItemName, setNewItemName] = useState("");
   const [newItemDescription, setNewItemDescription] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<ItemModel | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  const {
-    items,
-    setItems,
-    isLoading: areItemsLoading,
-  } = useGetItemsOfHome(homeId);
-
-  // useEffect(() => {
-  //   if (isInHome) {
-  //     console.log("we're in a home, buddy boy");
-  //   } else {
-  //     console.log("broken");
-  //   }
-  // }, [isInHome]);
+  const [items, setItems] = useState<ItemModel[]>([]);
 
   const addItem = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -154,7 +139,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
+    <div className="min-h-screen p-8">
       <Card className="max-w-4xl mx-auto">
         <CardHeader>
           <CardTitle className="text-3xl font-bold">
@@ -168,40 +153,32 @@ export default function Home() {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          {areItemsLoading ? (
-            <p className="text-center text-gray-500 my-4">Loading items...</p>
-          ) : items.length === 0 ? (
-            <p className="text-center text-gray-500 my-4">
-              You have no items yet. Add your first item below!
-            </p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Actions</TableHead>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Description</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {itemsData.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell className="font-medium">{item.name}</TableCell>
+                  <TableCell>{item.description}</TableCell>
+                  <TableCell>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openItemDialog(item)}
+                    >
+                      <Edit className="h-4 w-4 mr-2" /> Edit
+                    </Button>
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {items.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell className="font-medium">{item.name}</TableCell>
-                    <TableCell>{item.description}</TableCell>
-                    <TableCell>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openItemDialog(item)}
-                      >
-                        <Edit className="h-4 w-4 mr-2" /> Edit
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+              ))}
+            </TableBody>
+          </Table>
         </CardContent>
         <CardFooter>
           <form onSubmit={addItem} className="w-full space-y-4">
