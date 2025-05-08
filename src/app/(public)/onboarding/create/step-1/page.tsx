@@ -26,7 +26,7 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
-export default function Onboarding() {
+export default function Step1() {
   const router = useRouter();
   const { createNewHome, isLoading, error } = useCreateHome();
 

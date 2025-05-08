@@ -45,7 +45,7 @@ export default function SignUp() {
   async function onSubmit(data: FormData) {
     try {
       await createNewUser(data.name, data.email, data.password);
-      router.push("/onboarding");
+      router.push("/onboarding/start");
     } catch (err) {
       console.error("Signup error:", err);
       setError("An error occurred during sign up");
