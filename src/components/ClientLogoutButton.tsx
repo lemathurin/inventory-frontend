@@ -35,7 +35,7 @@ export default function ClientLogoutButton() {
   }
 
   return (
-    <div className="fixed top-4 right-4 flex gap-2">
+    <div className="fixed bottom-4 right-4 flex gap-2">
       <Button>
         {userData && `User: ${userData.name} (ID: ${userData.id})`}
       </Button>
