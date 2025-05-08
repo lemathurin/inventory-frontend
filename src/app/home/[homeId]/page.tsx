@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import axios, { AxiosError } from "axios";
-import { useRouter, useParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -32,50 +32,23 @@ import {
 import { Label } from "@/components/ui/label";
 import { PlusCircle, Edit, Trash2 } from "lucide-react";
 import { apiUrl } from "@/config/api";
+import { useGetItemsOfHome } from "@/domains/item/hooks/useGetItemsOfHome";
+import { ItemModel } from "@/domains/item/item.types";
+import { useGetHomeById } from "@/domains/home/hooks/useGetHomeById";
 
-type Item = {
-  id: string;
-  name: string;
-  description?: string;
-  purchaseDate?: string;
-  price?: number;
-  warranty?: number;
-  homeId: string;
-  ownerId: string;
-};
-
-export default function Home() {
-  const { homeId } = useParams();
-  const [items, setItems] = useState<Item[]>([]);
+export default function HomePage() {
+  const { homeId } = useParams<{ homeId: string }>();
+  const { homeData } = useGetHomeById(homeId);
+  const { itemsData } = useGetItemsOfHome(homeId);
   const [newItemName, setNewItemName] = useState("");
   const [newItemDescription, setNewItemDescription] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const [selectedItem, setSelectedItem] = useState<ItemModel | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const router = useRouter();
-
-  useEffect(() => {
-    fetchItems();
-  }, []);
-
-  const fetchItems = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      console.log("Fetching items for homeId:", homeId);
-      const response = await axios.get(apiUrl(`/homes/${homeId}/items`), {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      console.log("Items received:", response.data.length);
-      setItems(response.data);
-    } catch (err) {
-      setError("Failed to fetch items");
-      console.error(err);
-    }
-  };
+  const [items, setItems] = useState<ItemModel[]>([]);
 
   const addItem = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
 
     if (!newItemName.trim()) {
       setError("Item name cannot be empty");
@@ -83,11 +56,15 @@ export default function Home() {
     }
 
     try {
-      const token = localStorage.getItem("token");
       const response = await axios.post(
-        apiUrl(`/homes/${homeId}/items`),
-        { name: newItemName, description: newItemDescription },
-        { headers: { Authorization: `Bearer ${token}` } }
+        apiUrl(`/home/${homeId}/item`),
+        {
+          name: newItemName,
+          description: newItemDescription,
+        },
+        {
+          withCredentials: true,
+        }
       );
       setItems([...items, response.data]);
       setNewItemName("");
@@ -103,7 +80,7 @@ export default function Home() {
     }
   };
 
-  const openItemDialog = (item: Item) => {
+  const openItemDialog = (item: ItemModel) => {
     setSelectedItem(item);
     setIsDialogOpen(true);
   };
@@ -118,11 +95,12 @@ export default function Home() {
     if (!selectedItem) return;
 
     try {
-      const token = localStorage.getItem("token");
       const response = await axios.put(
-        apiUrl(`/homes/${homeId}/items/${selectedItem.id}`),
+        apiUrl(`/home/${homeId}/item/${selectedItem.id}`),
         selectedItem,
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          withCredentials: true,
+        }
       );
       setItems(
         items.map((item) =>
@@ -144,9 +122,8 @@ export default function Home() {
   const deleteItem = async () => {
     if (!selectedItem) return;
     try {
-      const token = localStorage.getItem("token");
-      await axios.delete(apiUrl(`/homes/${homeId}/items/${selectedItem.id}`), {
-        headers: { Authorization: `Bearer ${token}` },
+      await axios.delete(apiUrl(`/home/${homeId}/item/${selectedItem.id}`), {
+        withCredentials: true,
       });
       setItems(items.filter((item) => item.id !== selectedItem.id));
       closeItemDialog();
@@ -162,21 +139,13 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
+    <div className="min-h-screen p-8">
       <Card className="max-w-4xl mx-auto">
         <CardHeader>
           <CardTitle className="text-3xl font-bold">
-            Your Home Inventory
+            {homeData ? homeData.name : "Your Home Inventory"}
           </CardTitle>
           <CardDescription>Manage your household items here</CardDescription>
-          <Button
-            onClick={() => {
-              router.push(`/home/${homeId}/settings`);
-            }}
-            aria-label="Settings"
-          >
-            Home settings
-          </Button>
         </CardHeader>
         <CardContent>
           {error && (
@@ -184,38 +153,32 @@ export default function Home() {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          {items.length === 0 ? (
-            <p className="text-center text-gray-500 my-4">
-              You have no items yet. Add your first item below!
-            </p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Actions</TableHead>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Description</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {itemsData.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell className="font-medium">{item.name}</TableCell>
+                  <TableCell>{item.description}</TableCell>
+                  <TableCell>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openItemDialog(item)}
+                    >
+                      <Edit className="h-4 w-4 mr-2" /> Edit
+                    </Button>
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {items.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell className="font-medium">{item.name}</TableCell>
-                    <TableCell>{item.description}</TableCell>
-                    <TableCell>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openItemDialog(item)}
-                      >
-                        <Edit className="h-4 w-4 mr-2" /> Edit
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+              ))}
+            </TableBody>
+          </Table>
         </CardContent>
         <CardFooter>
           <form onSubmit={addItem} className="w-full space-y-4">
@@ -240,7 +203,7 @@ export default function Home() {
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="bg-white sm:max-w-[425px]">
+        <DialogContent className="bg-white text-black sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Edit Item</DialogTitle>
           </DialogHeader>

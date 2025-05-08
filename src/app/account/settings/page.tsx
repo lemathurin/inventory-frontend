@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,193 +14,111 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Toaster, toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
-import { apiUrl } from "@/config/api";
 import { DeleteAccountModal } from "@/components/delete-account-modal";
+import { useGetCurrentUser } from "@/domains/user/hooks/useGetCurrentUser";
+import {
+  useUpdateUserName,
+  useUpdateUserEmail,
+  useUpdateUserPassword,
+} from "@/domains/user/hooks/useUpdateUser";
+import { useDeleteUser } from "@/domains/user/hooks/useDeleteUser";
 
 export default function AccountSettings() {
-  const [userData, setUserData] = useState({ name: "", email: "" });
+  const { userData } = useGetCurrentUser();
+  const { updateName, isLoading: isUpdatingName } = useUpdateUserName();
+  const { updateEmail, isLoading: isUpdatingEmail } = useUpdateUserEmail();
+  const { updatePassword, isLoading: isUpdatingPassword } =
+    useUpdateUserPassword();
+  const { deleteUserAccount, isLoading: isDeletingAccount } = useDeleteUser();
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
-  const [isLoadingName, setIsLoadingName] = useState(false);
-  const [isLoadingEmail, setIsLoadingEmail] = useState(false);
-  const [isLoadingUserData, setIsLoadingUserData] = useState(true);
   const [showPasswords, setShowPasswords] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [isLoadingPassword, setIsLoadingPassword] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  const togglePasswordVisibility = () => {
+  function togglePasswordVisibility() {
     setShowPasswords(!showPasswords);
-  };
+  }
 
-  useEffect(() => {
-    fetchUserData();
-  }, []);
-
-  const fetchUserData = async () => {
-    try {
-      const response = await fetch(apiUrl("/users/me"), {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-      if (!response.ok) {
-        throw new Error("Failed to fetch user data");
-      }
-      const userData = await response.json();
-      setUserData(userData);
-      setNewName(userData.name);
-      setNewEmail(userData.email);
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-      toast.error("Failed to load user data");
-    } finally {
-      setIsLoadingUserData(false);
-    }
-  };
-
-  const handleChangeName = async (e: React.FormEvent) => {
+  async function handleChangeName(e: React.FormEvent) {
     e.preventDefault();
-    setIsLoadingName(true);
     try {
-      console.log("Sending request with newName:", newName);
-      const response = await fetch(apiUrl("/users/change-name"), {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ newName }),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Server response:", errorText);
-        throw new Error(`Failed to change name: ${response.statusText}`);
+      if (newName === userData?.name || !newName.trim()) {
+        toast.error("Please enter a new name");
+        return;
       }
 
-      const updatedUser = await response.json();
-      toast.success(`Your name has been changed to ${updatedUser.name}`);
-
-      setUserData((prevData) => ({ ...prevData, name: updatedUser.name }));
-      setNewName(updatedUser.name);
+      await updateName(newName);
+      toast.success(`Your name has been changed to ${newName}`);
+      setNewName(newName);
     } catch (error) {
       console.error("Error changing name:", error);
       toast.error("An error occurred while changing your name");
-    } finally {
-      setIsLoadingName(false);
     }
-  };
+  }
 
-  const handleChangeEmail = async (e: React.FormEvent) => {
+  async function handleChangeEmail(e: React.FormEvent) {
     e.preventDefault();
-    setIsLoadingEmail(true);
     try {
-      const response = await fetch(apiUrl("/users/change-email"), {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ newEmail }),
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to change email");
+      if (newEmail === userData?.email || !newEmail.trim()) {
+        toast.error("Please enter a new email");
+        return;
       }
-      const updatedUser = await response.json();
-      toast.success(`Your email has been changed to ${updatedUser.email}`);
 
-      setUserData((prevData) => ({ ...prevData, email: updatedUser.email }));
-      setNewEmail(updatedUser.email);
+      await updateEmail(newEmail);
+      toast.success(`Your email has been changed to ${newEmail}`);
+      setNewEmail(newEmail);
     } catch (error) {
-      if (error instanceof Error) {
-        console.error("Error changing email:", error);
-        toast.error(
-          error.message || "An error occurred while changing your email"
-        );
-      }
-    } finally {
-      setIsLoadingEmail(false);
+      console.error("Error changing email:", error);
+      toast.error("An error occurred while changing your email");
     }
-  };
+  }
 
-  const handleChangePassword = async (e: React.FormEvent) => {
+  async function handleChangePassword(e: React.FormEvent) {
     e.preventDefault();
-    if (newPassword !== confirmPassword) {
-      toast.error("New passwords don't match");
-      return;
-    }
-    setIsLoadingPassword(true);
     try {
-      const response = await fetch(apiUrl("/users/change-password"), {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ currentPassword, newPassword }),
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to change password");
+      if (newPassword !== confirmPassword) {
+        toast.error("New passwords don't match");
+        return;
       }
+
+      if (!currentPassword || !newPassword || !confirmPassword) {
+        toast.error("Please fill in all password fields");
+        return;
+      }
+
+      await updatePassword(currentPassword, newPassword);
       toast.success("Password changed successfully");
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch (error) {
-      if (error instanceof Error) {
-        console.error("Error changing password:", error);
-        toast.error(
-          error.message || "An error occurred while changing your password"
-        );
-      }
-    } finally {
-      setIsLoadingPassword(false);
+      console.error("Error changing password:", error);
+      toast.error("An error occurred while changing your password");
     }
-  };
+  }
 
-  const handleDeleteAccount = async (password: string) => {
+  async function handleDeleteAccount(password: string) {
     try {
-      const response = await fetch(apiUrl("/users/delete-account"), {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ password }),
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to delete account");
-      }
+      await deleteUserAccount(password);
       toast.success("Account deleted successfully");
-      // Clear local storage and redirect to home page or login page after successful deletion
-      localStorage.removeItem("token");
       window.location.href = "/login";
     } catch (error) {
-      if (error instanceof Error) {
-        console.error("Error deleting account:", error);
-        toast.error(
-          error.message || "An error occurred while deleting your account"
-        );
-      }
-    } finally {
-      setIsDeleteModalOpen(false);
+      console.error("Error deleting account:", error);
+      toast.error("An error occurred while deleting your account");
     }
-  };
+  }
 
-  if (isLoadingUserData) {
-    return <div>Loading user data...</div>;
+  if (!userData) {
+    return null;
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
+    <div className="min-h-screen p-8">
       <Toaster richColors position="bottom-right" />
-      <h1 className="text-3xl font-bold mb-8">Account Settings</h1>
+      <h1 className="text-primary text-3xl font-bold mb-8">Account Settings</h1>
 
       <Card className="mb-8">
         <CardHeader className="space-y-1">
@@ -223,10 +141,10 @@ export default function AccountSettings() {
               type="submit"
               className="w-full sm:w-auto"
               disabled={
-                isLoadingName || newName === userData.name || newName === ""
+                isUpdatingName || newName === userData?.name || !newName.trim()
               }
             >
-              {isLoadingName ? "Saving..." : "Save Name"}
+              {isUpdatingName ? "Saving..." : "Save Name"}
             </Button>
           </form>
         </CardContent>
@@ -243,7 +161,7 @@ export default function AccountSettings() {
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
-                placeholder={userData.email}
+                placeholder={userData?.email}
                 type="email"
                 value={newEmail}
                 onChange={(e) => setNewEmail(e.target.value)}
@@ -251,12 +169,15 @@ export default function AccountSettings() {
               />
             </div>
             <Button
+              type="submit"
               className="w-full sm:w-auto"
               disabled={
-                isLoadingEmail || newEmail === userData.email || newEmail === ""
+                isUpdatingEmail ||
+                newEmail === userData?.email ||
+                !newEmail.trim()
               }
             >
-              Save Email
+              {isUpdatingEmail ? "Saving..." : "Save Email"}
             </Button>
           </form>
         </CardContent>
@@ -275,7 +196,6 @@ export default function AccountSettings() {
                 <Input
                   id="current-password"
                   type={showPasswords ? "text" : "password"}
-                  // placeholder="Enter your current password"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   required
@@ -302,7 +222,6 @@ export default function AccountSettings() {
                 <Input
                   id="new-password"
                   type={showPasswords ? "text" : "password"}
-                  // placeholder="Enter your new password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
@@ -329,7 +248,6 @@ export default function AccountSettings() {
                 <Input
                   id="confirm-password"
                   type={showPasswords ? "text" : "password"}
-                  // placeholder="Confirm your new password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
@@ -354,14 +272,14 @@ export default function AccountSettings() {
               type="submit"
               className="w-full sm:w-auto"
               disabled={
-                isLoadingPassword ||
+                isUpdatingPassword ||
                 !currentPassword ||
                 !newPassword ||
                 !confirmPassword ||
                 newPassword !== confirmPassword
               }
             >
-              Change Password
+              {isUpdatingPassword ? "Updating..." : "Change Password"}
             </Button>
           </form>
         </CardContent>
@@ -394,7 +312,6 @@ export default function AccountSettings() {
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDeleteAccount}
-        // currentPassword={currentPassword}
       />
     </div>
   );
