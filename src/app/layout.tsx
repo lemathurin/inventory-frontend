@@ -45,7 +45,7 @@ export default function RootLayout({
           <SidebarProvider>
             <AppSidebar />
             <SidebarInset>
-              <ClientLogoutButton />
+              {/* <ClientLogoutButton /> */}
               {children}
             </SidebarInset>
           </SidebarProvider>
