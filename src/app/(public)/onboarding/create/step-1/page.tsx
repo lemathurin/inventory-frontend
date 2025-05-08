@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useCreateHome } from "@/domains/home/hooks/useCreateHome";
+import OnboardingHeader from "@/components/onboarding/onboarding-header";
 
 const schema = z.object({
   name: z.string().min(1, { message: "Home name is required" }),
@@ -50,51 +51,56 @@ export default function Step1() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold">Welcome!</CardTitle>
-          <CardDescription>Let&#39;s set up your home</CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-4">
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="home-name">Home Name</Label>
-              <Input
-                id="home-name"
-                type="text"
-                placeholder="Name your home"
-                {...register("name")}
-              />
-              {errors.name && (
-                <p className="text-sm text-red-500">{errors.name.message}</p>
+    <>
+      <OnboardingHeader currentStep={2} totalSteps={3} />
+      <div className="flex items-center justify-center min-h-screen">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold">Welcome!</CardTitle>
+            <CardDescription>Let&#39;s set up your home</CardDescription>
+          </CardHeader>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <CardContent className="space-y-4">
+              {error && (
+                <Alert variant="destructive">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
               )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="address">Address</Label>
-              <Input
-                id="address"
-                type="text"
-                placeholder="Enter your address"
-                {...register("address")}
-              />
-              {errors.address && (
-                <p className="text-sm text-red-500">{errors.address.message}</p>
-              )}
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Creating Home..." : "Create Home"}
-            </Button>
-          </CardFooter>
-        </form>
-      </Card>
-    </div>
+              <div className="space-y-2">
+                <Label htmlFor="home-name">Home Name</Label>
+                <Input
+                  id="home-name"
+                  type="text"
+                  placeholder="Name your home"
+                  {...register("name")}
+                />
+                {errors.name && (
+                  <p className="text-sm text-red-500">{errors.name.message}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="address">Address</Label>
+                <Input
+                  id="address"
+                  type="text"
+                  placeholder="Enter your address"
+                  {...register("address")}
+                />
+                {errors.address && (
+                  <p className="text-sm text-red-500">
+                    {errors.address.message}
+                  </p>
+                )}
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? "Creating Home..." : "Create Home"}
+              </Button>
+            </CardFooter>
+          </form>
+        </Card>
+      </div>
+    </>
   );
 }
