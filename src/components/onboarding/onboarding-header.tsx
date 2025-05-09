@@ -59,7 +59,7 @@ export default function OnboardingHeader({
       </Breadcrumb>
 
       <div className="inline-flex justify-start items-center gap-2.5 flex-wrap">
-        {Array.from({ length: totalSteps }, (_, index) => (
+        {Array.from({ length: totalSteps - 1 }, (_, index) => (
           <div
             key={index}
             className={`w-6 h-6 rounded-[50px] outline outline-2 outline-offset-[-1px] outline-border ${
@@ -75,8 +75,18 @@ export default function OnboardingHeader({
             </div>
           </div>
         ))}
-        <div className="w-6 h-6 rounded-[50px] outline outline-2 outline-offset-[-1px] outline-border inline-flex flex-col justify-center items-center overflow-hidden">
-          <Check className="w-3.5 h-3.5 text-muted-foreground" />
+        <div
+          className={`w-6 h-6 rounded-[50px] outline outline-2 outline-offset-[-1px] outline-border ${
+            currentStep === totalSteps ? "bg-accent outline-primary" : ""
+          } inline-flex flex-col justify-center items-center overflow-hidden`}
+        >
+          <Check
+            className={`w-3.5 h-3.5 ${
+              currentStep === totalSteps
+                ? "text-primary"
+                : "text-muted-foreground"
+            }`}
+          />
         </div>
       </div>
     </div>
