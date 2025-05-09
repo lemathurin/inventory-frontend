@@ -63,7 +63,7 @@ export default function OnboardingHeader({
           <div
             key={index}
             className={`w-6 h-6 rounded-[50px] outline outline-2 outline-offset-[-1px] outline-border ${
-              index < currentStep ? "bg-accent" : ""
+              index < currentStep ? "bg-accent outline-primary" : ""
             } inline-flex flex-col justify-center items-center overflow-hidden`}
           >
             <div

@@ -27,7 +27,7 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
-export default function Step1() {
+export default function OnboardingCreateStep1() {
   const router = useRouter();
   const { createNewHome, isLoading, error } = useCreateHome();
 
@@ -43,7 +43,8 @@ export default function Step1() {
     try {
       const response = await createNewHome(data.name, data.address);
       if (response?.home?.id) {
-        router.push(`/home/${response.home.id}`);
+        // router.push(`/home/${response.home.id}`);
+        router.push(`/onboarding/create/step-2?homeId=${response.home.id}`);
       }
     } catch (err) {
       console.error("Home creation error:", err);
@@ -57,7 +58,7 @@ export default function Step1() {
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle className="text-2xl font-bold">Welcome!</CardTitle>
-            <CardDescription>Let&#39;s set up your home</CardDescription>
+            <CardDescription>Let&#39;s set up your new home</CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit(onSubmit)}>
             <CardContent className="space-y-4">
