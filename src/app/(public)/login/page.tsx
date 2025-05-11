@@ -1,11 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import axios from "axios";
-import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { apiUrl } from "@/config/api";
+import { useLogin } from "@/domains/user/hooks/useLogin";
 
 const schema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -31,10 +28,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export default function Login() {
-  const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const redirect = searchParams.get("redirect") || "/";
+  const { handleLogin, error } = useLogin();
   const {
     register,
     handleSubmit,
@@ -43,27 +37,13 @@ export default function Login() {
     resolver: zodResolver(schema),
   });
 
-  const onSubmit = async (data: FormData) => {
+  async function onSubmit(data: FormData) {
     try {
-      const response = await axios.post(apiUrl(`/user/login`), data, {
-        withCredentials: true,
-      });
-
-      console.log("Full response:", response);
-      console.log("Response data:", response.data);
-
-      const { id, homeId, hasHome } = response.data;
-      console.log("homeId received:", homeId);
-
-      const target = hasHome ? `/home/${homeId}` : "/onboarding/start/";
-      window.location.href = target;
+      await handleLogin(data);
     } catch (err) {
       console.error("Login error:", err);
-      setError(
-        "An error occurred during login. Please check your credentials and try again."
-      );
     }
-  };
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen">
