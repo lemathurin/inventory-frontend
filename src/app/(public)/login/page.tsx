@@ -52,11 +52,10 @@ export default function Login() {
       console.log("Full response:", response);
       console.log("Response data:", response.data);
 
-      const { id, homeId } = response.data;
+      const { id, homeId, hasHome } = response.data;
       console.log("homeId received:", homeId);
 
-      // Redirect to the intended page or home
-      const target = homeId ? `/home/${homeId}` : redirect;
+      const target = hasHome ? `/home/${homeId}` : "/onboarding/start/";
       window.location.href = target;
     } catch (err) {
       console.error("Login error:", err);
