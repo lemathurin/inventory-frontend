@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import OnboardingHeader from "@/components/onboarding/onboarding-header";
+import OnboardingHeader from "@/components/onboarding/OnboardingHeader";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";

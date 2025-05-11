@@ -13,7 +13,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import OnboardingHeader from "@/components/onboarding/onboarding-header";
+import OnboardingHeader from "@/components/onboarding/OnboardingHeader";
 
 export default function StartOnboarding() {
   const router = useRouter();

@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useCreateHome } from "@/domains/home/hooks/useCreateHome";
-import OnboardingHeader from "@/components/onboarding/onboarding-header";
+import OnboardingHeader from "@/components/onboarding/OnboardingHeader";
 
 const schema = z.object({
   name: z.string().min(1, { message: "Home name is required" }),
