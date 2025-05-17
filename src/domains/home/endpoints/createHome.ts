@@ -5,7 +5,7 @@ export async function createHome(name: string, address: string) {
   const response = await axios.post(
     apiUrl("/home/create-home"),
     { name, address },
-    { withCredentials: true }
+    { withCredentials: true },
   );
   return response.data;
 }

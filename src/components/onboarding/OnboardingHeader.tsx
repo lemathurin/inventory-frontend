@@ -32,7 +32,7 @@ export default function OnboardingHeader({
   const segments = pathname.split("/").filter(Boolean);
   const breadcrumbs = segments
     .map(
-      (segment) => BreadcrumbLabels[segment as keyof typeof BreadcrumbLabels]
+      (segment) => BreadcrumbLabels[segment as keyof typeof BreadcrumbLabels],
     )
     .filter(Boolean);
 

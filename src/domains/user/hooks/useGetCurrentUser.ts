@@ -13,7 +13,7 @@ export function useGetCurrentUser() {
         setUserData(userData);
         console.log("Fetched user data with useGetCurrentUser:", userData);
       } catch (err) {
-        console.error('Error fetching current user:', err);
+        console.error("Error fetching current user:", err);
       } finally {
         setLoading(false);
       }

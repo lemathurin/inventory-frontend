@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import { getItemsOfHome } from '../endpoints/getItemsOfHome';
-import { ItemModel } from '../item.types';
+import { useEffect, useState } from "react";
+import { getItemsOfHome } from "../endpoints/getItemsOfHome";
+import { ItemModel } from "../item.types";
 
 export function useGetItemsOfHome(homeId: string) {
   const [itemsData, setItemsData] = useState<ItemModel[]>([]);
@@ -12,7 +12,7 @@ export function useGetItemsOfHome(homeId: string) {
         const itemsData = await getItemsOfHome(homeId);
         setItemsData(itemsData);
       } catch (err) {
-        console.error('Error fetching items:', err);
+        console.error("Error fetching items:", err);
       } finally {
         setIsLoading(false);
       }

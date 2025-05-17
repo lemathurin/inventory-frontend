@@ -1,6 +1,6 @@
-import axios from 'axios';
-import { useState } from 'react';
-import { apiUrl } from '@/config/api';
+import axios from "axios";
+import { useState } from "react";
+import { apiUrl } from "@/config/api";
 
 type FormData = {
   email: string;
@@ -21,12 +21,12 @@ export function useLogin() {
       const response = await axios.post<LoginResponse>(
         apiUrl(`/user/login`),
         data,
-        { withCredentials: true }
+        { withCredentials: true },
       );
 
       // NOTE: Redirect to onboarding if no home
-      const target = response.data.hasHome 
-        ? `/home/${response.data.homeId}` 
+      const target = response.data.hasHome
+        ? `/home/${response.data.homeId}`
         : "/onboarding/start/";
       window.location.href = target;
 
@@ -36,7 +36,7 @@ export function useLogin() {
       setError("An error occurred. Please check your credentials.");
       throw err;
     }
-  };
+  }
 
   return { handleLogin, error };
-};
+}

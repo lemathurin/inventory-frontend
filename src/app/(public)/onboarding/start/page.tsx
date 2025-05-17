@@ -18,7 +18,7 @@ import OnboardingHeader from "@/components/onboarding/OnboardingHeader";
 export default function StartOnboarding() {
   const router = useRouter();
   const [selectedValue, setSelectedValue] = useState<string | undefined>(
-    undefined
+    undefined,
   );
 
   function handleSubmit() {

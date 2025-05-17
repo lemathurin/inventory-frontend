@@ -12,7 +12,7 @@ export function useLogout() {
         {},
         {
           withCredentials: true,
-        }
+        },
       );
       // Force a full page reload to clear all client-side state
       window.location.href = "/login";

@@ -64,7 +64,7 @@ export default function HomePage() {
         },
         {
           withCredentials: true,
-        }
+        },
       );
       setItems([...items, response.data]);
       setNewItemName("");
@@ -74,7 +74,7 @@ export default function HomePage() {
         console.error("Error adding item:", error);
         setError(
           "Failed to add item: " +
-            (error.response?.data?.error || error.message)
+            (error.response?.data?.error || error.message),
         );
       }
     }
@@ -100,12 +100,12 @@ export default function HomePage() {
         selectedItem,
         {
           withCredentials: true,
-        }
+        },
       );
       setItems(
         items.map((item) =>
-          item.id === selectedItem.id ? response.data : item
-        )
+          item.id === selectedItem.id ? response.data : item,
+        ),
       );
       closeItemDialog();
     } catch (error) {
@@ -113,7 +113,7 @@ export default function HomePage() {
         console.error("Error updating item:", error);
         setError(
           "Failed to update item: " +
-            (error.response?.data?.error || error.message)
+            (error.response?.data?.error || error.message),
         );
       }
     }
@@ -132,7 +132,7 @@ export default function HomePage() {
         console.error("Error deleting item:", error);
         setError(
           "Failed to delete item: " +
-            (error.response?.data?.error || error.message)
+            (error.response?.data?.error || error.message),
         );
       }
     }
