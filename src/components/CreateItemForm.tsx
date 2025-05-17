@@ -21,25 +21,22 @@ import {
 import { format } from "date-fns";
 import { CalendarIcon, Upload } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 
 export default function CreateItemForm() {
   const [date, setDate] = useState<Date>();
   const [hasWarranty, setHasWarranty] = useState(false);
 
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    // Handle form submission logic here
+  }
+
   return (
-    <div className="w-full space-y-4">
+    <form onSubmit={handleSubmit} className="w-full space-y-4">
       <div className="mb-4">
         <Label htmlFor="name">Name</Label>
-        <Input id="name" className="mt-1" />
+        <Input id="name" type="text" className="mt-1" />
       </div>
 
       <div>
@@ -197,6 +194,6 @@ export default function CreateItemForm() {
           </div>
         </div>
       </div>
-    </div>
+    </form>
   );
 }
