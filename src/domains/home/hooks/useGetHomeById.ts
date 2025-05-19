@@ -12,7 +12,7 @@ export function useGetHomeById(homeId: string) {
         const data = await getHomeById(homeId);
         setHomeData(data);
       } catch (err) {
-        console.error('Error fetching home data:', err);
+        console.error("Error fetching home data:", err);
       } finally {
         setIsLoading(false);
       }

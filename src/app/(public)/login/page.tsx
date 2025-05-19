@@ -1,10 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,10 +16,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useCreateUser } from "@/domains/user/hooks/useCreateUser";
+import { useLogin } from "@/domains/user/hooks/useLogin";
 
 const schema = z.object({
-  name: z.string().min(2, { message: "Name must be at least 2 characters" }),
   email: z.string().email({ message: "Invalid email address" }),
   password: z
     .string()
@@ -30,10 +27,8 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
-export default function SignUp() {
-  const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
-  const { createNewUser, isLoading } = useCreateUser();
+export default function Login() {
+  const { handleLogin, error } = useLogin();
   const {
     register,
     handleSubmit,
@@ -44,20 +39,20 @@ export default function SignUp() {
 
   async function onSubmit(data: FormData) {
     try {
-      await createNewUser(data.name, data.email, data.password);
-      router.push("/onboarding");
+      await handleLogin(data);
     } catch (err) {
-      console.error("Signup error:", err);
-      setError("An error occurred during sign up");
+      console.error("Login error:", err);
     }
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+    <div className="flex items-center justify-center min-h-screen">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">Sign Up</CardTitle>
-          <CardDescription>Create a new account to get started</CardDescription>
+          <CardTitle className="text-2xl font-bold">Login</CardTitle>
+          <CardDescription>
+            Enter your credentials to access your account
+          </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-4">
@@ -66,18 +61,6 @@ export default function SignUp() {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
-              <Input
-                id="name"
-                type="text"
-                placeholder="Your name"
-                {...register("name")}
-              />
-              {errors.name && (
-                <p className="text-sm text-red-500">{errors.name.message}</p>
-              )}
-            </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -101,15 +84,15 @@ export default function SignUp() {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Signing Up..." : "Sign Up"}
+            <Button type="submit" className="w-full">
+              Login
             </Button>
-            <p className="text-sm text-center text-gray-600">
-              Already have an account?{" "}
-              <Link href="/login" className="text-primary hover:underline">
-                Log in
+            <span className="text-sm text-center text-gray-600">
+              Don&#39;t have an account?{" "}
+              <Link href="/signup" className="text-primary hover:underline">
+                Sign up
               </Link>
-            </p>
+            </span>
           </CardFooter>
         </form>
       </Card>

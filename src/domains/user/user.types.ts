@@ -37,4 +37,4 @@ export interface UserModel {
       updatedAt: Date;
     };
   }>;
-} 
+}

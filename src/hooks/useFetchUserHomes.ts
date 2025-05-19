@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { apiUrl } from '@/config/api';
+import { useState, useEffect } from "react";
+import { apiUrl } from "@/config/api";
 
 interface Home {
   id: string;
@@ -14,28 +14,28 @@ export const useFetchUserHomes = () => {
   useEffect(() => {
     const fetchHomes = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
         if (!token) {
-          throw new Error('No authentication token found');
+          throw new Error("No authentication token found");
         }
 
-        const response = await fetch(apiUrl('/homes/user-homes'), {
-          method: 'GET',
+        const response = await fetch(apiUrl("/homes/user-homes"), {
+          method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
         });
 
         if (!response.ok) {
-          throw new Error('Failed to fetch homes');
+          throw new Error("Failed to fetch homes");
         }
 
         const data = await response.json();
         setHomes(data);
       } catch (err) {
-        setError('Error fetching homes. Please try again later.');
-        console.error('Error fetching homes:', err);
+        setError("Error fetching homes. Please try again later.");
+        console.error("Error fetching homes:", err);
       } finally {
         setLoading(false);
       }
