@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import axios, { AxiosError } from "axios";
-import { useRouter, useParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useState, useEffect } from 'react';
+import axios, { AxiosError } from 'axios';
+import { useRouter, useParams } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Card,
   CardContent,
@@ -12,8 +12,8 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+} from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Table,
   TableBody,
@@ -21,17 +21,17 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { PlusCircle, Edit, Trash2 } from "lucide-react";
-import { apiUrl } from "@/config/api";
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { PlusCircle, Edit, Trash2 } from 'lucide-react';
+import { apiUrl } from '@/config/api';
 
 type Item = {
   id: string;
@@ -41,14 +41,14 @@ type Item = {
   price?: number;
   warranty?: number;
   homeId: string;
-  ownerId: string;
+  userId: string;
 };
 
 export default function Home() {
   const { homeId } = useParams();
   const [items, setItems] = useState<Item[]>([]);
-  const [newItemName, setNewItemName] = useState("");
-  const [newItemDescription, setNewItemDescription] = useState("");
+  const [newItemName, setNewItemName] = useState('');
+  const [newItemDescription, setNewItemDescription] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -60,49 +60,60 @@ export default function Home() {
 
   const fetchItems = async () => {
     try {
-      const token = localStorage.getItem("token");
-      console.log("Fetching items for homeId:", homeId);
+      const token = localStorage.getItem('token');
+      console.log('Fetching items for homeId:', homeId);
       const response = await axios.get(apiUrl(`/homes/${homeId}/items`), {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log("Items received:", response.data.length);
+      console.log('Items received:', response.data.length);
       setItems(response.data);
     } catch (err) {
-      setError("Failed to fetch items");
+      setError('Failed to fetch items');
       console.error(err);
     }
   };
 
   const addItem = async (e: React.FormEvent) => {
+    // Prevent the default form submission behavior
     e.preventDefault();
-    setError("");
 
+    // Reset any existing error messages
+    setError('');
+
+    // Check if the new item name is empty or consists only of whitespace
     if (!newItemName.trim()) {
-      setError("Item name cannot be empty");
-      return;
+      setError('Item name cannot be empty'); // Set an error message if the item name is empty
+      return; // Exit the function early if the item name is invalid
     }
-
     try {
-      const token = localStorage.getItem("token");
+      // Retrieve the authentication token from local storage
+      const token = localStorage.getItem('token');
+
+      // Make a POST request to add a new item to the specified home
       const response = await axios.post(
-        apiUrl(`/homes/${homeId}/items`),
-        { name: newItemName, description: newItemDescription },
-        { headers: { Authorization: `Bearer ${token}` } }
+        apiUrl(`/homes/${homeId}/items`), // Construct the URL with the homeId
+        { name: newItemName, description: newItemDescription }, // Data to be sent in the request body
+        { headers: { Authorization: `Bearer ${token}` } } // Include the token in the request headers for authentication
       );
+      // Update the items state with the newly added item
       setItems([...items, response.data]);
-      setNewItemName("");
-      setNewItemDescription("");
+
+      // Reset the input fields for the new item
+      setNewItemName('');
+      setNewItemDescription('');
     } catch (error) {
+      // Handle any errors that occur during the request
       if (error instanceof AxiosError) {
-        console.error("Error adding item:", error);
+        // Check if the error is an AxiosError
+        console.error('Error adding item:', error); // Log the error to the console
+        // Set an error message based on the response from the server or the error message
         setError(
-          "Failed to add item: " +
-            (error.response?.data?.error || error.message)
+          'Failed to add item: ' +
+            (error.response?.data?.error || error.message) // Use the error message from the response if available
         );
       }
     }
   };
-
   const openItemDialog = (item: Item) => {
     setSelectedItem(item);
     setIsDialogOpen(true);
@@ -118,7 +129,7 @@ export default function Home() {
     if (!selectedItem) return;
 
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem('token');
       const response = await axios.put(
         apiUrl(`/homes/${homeId}/items/${selectedItem.id}`),
         selectedItem,
@@ -132,9 +143,9 @@ export default function Home() {
       closeItemDialog();
     } catch (error) {
       if (error instanceof AxiosError) {
-        console.error("Error updating item:", error);
+        console.error('Error updating item:', error);
         setError(
-          "Failed to update item: " +
+          'Failed to update item: ' +
             (error.response?.data?.error || error.message)
         );
       }
@@ -144,7 +155,7 @@ export default function Home() {
   const deleteItem = async () => {
     if (!selectedItem) return;
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem('token');
       await axios.delete(apiUrl(`/homes/${homeId}/items/${selectedItem.id}`), {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -152,9 +163,9 @@ export default function Home() {
       closeItemDialog();
     } catch (error) {
       if (error instanceof AxiosError) {
-        console.error("Error deleting item:", error);
+        console.error('Error deleting item:', error);
         setError(
-          "Failed to delete item: " +
+          'Failed to delete item: ' +
             (error.response?.data?.error || error.message)
         );
       }
@@ -162,10 +173,10 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <Card className="max-w-4xl mx-auto">
+    <div className='min-h-screen bg-gray-100 p-8'>
+      <Card className='max-w-4xl mx-auto'>
         <CardHeader>
-          <CardTitle className="text-3xl font-bold">
+          <CardTitle className='text-3xl font-bold'>
             Your Home Inventory
           </CardTitle>
           <CardDescription>Manage your household items here</CardDescription>
@@ -173,19 +184,19 @@ export default function Home() {
             onClick={() => {
               router.push(`/home/${homeId}/settings`);
             }}
-            aria-label="Settings"
+            aria-label='Settings'
           >
             Home settings
           </Button>
         </CardHeader>
         <CardContent>
           {error && (
-            <Alert variant="destructive" className="mb-4">
+            <Alert variant='destructive' className='mb-4'>
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
           {items.length === 0 ? (
-            <p className="text-center text-gray-500 my-4">
+            <p className='text-center text-gray-500 my-4'>
               You have no items yet. Add your first item below!
             </p>
           ) : (
@@ -200,15 +211,15 @@ export default function Home() {
               <TableBody>
                 {items.map((item) => (
                   <TableRow key={item.id}>
-                    <TableCell className="font-medium">{item.name}</TableCell>
+                    <TableCell className='font-medium'>{item.name}</TableCell>
                     <TableCell>{item.description}</TableCell>
                     <TableCell>
                       <Button
-                        variant="outline"
-                        size="sm"
+                        variant='outline'
+                        size='sm'
                         onClick={() => openItemDialog(item)}
                       >
-                        <Edit className="h-4 w-4 mr-2" /> Edit
+                        <Edit className='h-4 w-4 mr-2' /> Edit
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -218,42 +229,42 @@ export default function Home() {
           )}
         </CardContent>
         <CardFooter>
-          <form onSubmit={addItem} className="w-full space-y-4">
+          <form onSubmit={addItem} className='w-full space-y-4'>
             <Input
-              type="text"
+              type='text'
               value={newItemName}
               onChange={(e) => setNewItemName(e.target.value)}
-              placeholder="Item name"
+              placeholder='Item name'
               required
             />
             <Input
-              type="text"
+              type='text'
               value={newItemDescription}
               onChange={(e) => setNewItemDescription(e.target.value)}
-              placeholder="Item description"
+              placeholder='Item description'
             />
-            <Button type="submit" className="w-full">
-              <PlusCircle className="mr-2 h-4 w-4" /> Add Item
+            <Button type='submit' className='w-full'>
+              <PlusCircle className='mr-2 h-4 w-4' /> Add Item
             </Button>
           </form>
         </CardFooter>
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="bg-white sm:max-w-[425px]">
+        <DialogContent className='bg-white sm:max-w-[425px]'>
           <DialogHeader>
             <DialogTitle>Edit Item</DialogTitle>
           </DialogHeader>
           {selectedItem && (
-            <form onSubmit={updateItem} className="space-y-4">
+            <form onSubmit={updateItem} className='space-y-4'>
               <div>
-                <Label htmlFor="id">ID (not editable)</Label>
-                <Input id="id" value={selectedItem.id} disabled />
+                <Label htmlFor='id'>ID (not editable)</Label>
+                <Input id='id' value={selectedItem.id} disabled />
               </div>
               <div>
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor='name'>Name</Label>
                 <Input
-                  id="name"
+                  id='name'
                   value={selectedItem.name}
                   onChange={(e) =>
                     setSelectedItem({ ...selectedItem, name: e.target.value })
@@ -261,10 +272,10 @@ export default function Home() {
                 />
               </div>
               <div>
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor='description'>Description</Label>
                 <Input
-                  id="description"
-                  value={selectedItem.description || ""}
+                  id='description'
+                  value={selectedItem.description || ''}
                   onChange={(e) =>
                     setSelectedItem({
                       ...selectedItem,
@@ -274,16 +285,16 @@ export default function Home() {
                 />
               </div>
               <div>
-                <Label htmlFor="purchaseDate">Purchase Date</Label>
+                <Label htmlFor='purchaseDate'>Purchase Date</Label>
                 <Input
-                  id="purchaseDate"
-                  type="date"
+                  id='purchaseDate'
+                  type='date'
                   value={
                     selectedItem.purchaseDate
                       ? new Date(selectedItem.purchaseDate)
                           .toISOString()
-                          .split("T")[0]
-                      : ""
+                          .split('T')[0]
+                      : ''
                   }
                   onChange={(e) =>
                     setSelectedItem({
@@ -294,11 +305,11 @@ export default function Home() {
                 />
               </div>
               <div>
-                <Label htmlFor="price">Price</Label>
+                <Label htmlFor='price'>Price</Label>
                 <Input
-                  id="price"
-                  type="number"
-                  value={selectedItem.price || ""}
+                  id='price'
+                  type='number'
+                  value={selectedItem.price || ''}
                   onChange={(e) =>
                     setSelectedItem({
                       ...selectedItem,
@@ -308,11 +319,11 @@ export default function Home() {
                 />
               </div>
               <div>
-                <Label htmlFor="warranty">Warranty (months)</Label>
+                <Label htmlFor='warranty'>Warranty (months)</Label>
                 <Input
-                  id="warranty"
-                  type="number"
-                  value={selectedItem.warranty || ""}
+                  id='warranty'
+                  type='number'
+                  value={selectedItem.warranty || ''}
                   onChange={(e) =>
                     setSelectedItem({
                       ...selectedItem,
@@ -322,24 +333,24 @@ export default function Home() {
                 />
               </div>
               <div>
-                <Label htmlFor="homeId">Home ID (not editable)</Label>
-                <Input id="homeId" value={selectedItem.homeId} disabled />
+                <Label htmlFor='homeId'>Home ID (not editable)</Label>
+                <Input id='homeId' value={selectedItem.homeId} disabled />
               </div>
               <div>
-                <Label htmlFor="ownerId">Owner ID (not editable)</Label>
-                <Input id="ownerId" value={selectedItem.ownerId} disabled />
+                <Label htmlFor='ownerId'>Owner ID (not editable)</Label>
+                <Input id='ownerId' value={selectedItem.ownerId} disabled />
               </div>
-              <DialogFooter className="flex flex-col sm:flex-row sm:justify-between gap-2">
-                <Button type="submit" className="w-full sm:w-auto">
+              <DialogFooter className='flex flex-col sm:flex-row sm:justify-between gap-2'>
+                <Button type='submit' className='w-full sm:w-auto'>
                   Save changes
                 </Button>
                 <Button
-                  type="button"
-                  variant="destructive"
-                  className="w-full sm:w-auto"
+                  type='button'
+                  variant='destructive'
+                  className='w-full sm:w-auto'
                   onClick={deleteItem}
                 >
-                  <Trash2 className="h-4 w-4 mr-2" /> Delete Item
+                  <Trash2 className='h-4 w-4 mr-2' /> Delete Item
                 </Button>
               </DialogFooter>
             </form>
