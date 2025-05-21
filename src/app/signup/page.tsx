@@ -87,7 +87,7 @@ export default function SignUp() {
                 id='name'
                 type='text'
                 placeholder='Your name'
-                data-testid='name-input'
+                data-testid='username-input'
                 {...register('name')}
               />
               {errors.name && (
@@ -123,7 +123,11 @@ export default function SignUp() {
             </div>
           </CardContent>
           <CardFooter className='flex flex-col space-y-4'>
-            <Button type='submit' className='w-full' data-testid='submit-input'>
+            <Button
+              type='submit'
+              className='w-full'
+              data-testid='register-button'
+            >
               Sign Up
             </Button>
             <p className='text-sm text-center text-gray-600'>

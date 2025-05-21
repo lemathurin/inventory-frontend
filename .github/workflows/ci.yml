@@ -55,10 +55,10 @@ jobs:
         with:
           build: npm run build
           start: npm start
-          wait-on: 'http://localhost:3000'
+          wait-on: 'http://localhost:4000'
           config: video=false
         env:
           # test environement variables for Cypress
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/testdb
-          NEXTAUTH_URL: http://localhost:3000
+          NEXTAUTH_URL: http://localhost:4000
           NEXTAUTH_SECRET: testsecret123

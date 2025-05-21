@@ -1,7 +1,8 @@
 {
-  "name": "Samsung TV",
-  "description": "55 inch 4K LED TV",
-  "purchaseDate": "2023-05-15",
-  "price": "599.99",
-  "warranty": "24"
+  "name": "Blender",
+  "description": "Kitchen blender",
+  "purchaseDate": "2023-01-01",
+  "price": "59.99",
+  "warranty": "2",
+  "otherUserItemId": "999"
 }

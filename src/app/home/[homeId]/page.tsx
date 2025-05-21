@@ -338,7 +338,7 @@ export default function Home() {
               </div>
               <div>
                 <Label htmlFor='ownerId'>Owner ID (not editable)</Label>
-                <Input id='ownerId' value={selectedItem.ownerId} disabled />
+                <Input id='ownerId' value={selectedItem.userId} disabled />
               </div>
               <DialogFooter className='flex flex-col sm:flex-row sm:justify-between gap-2'>
                 <Button type='submit' className='w-full sm:w-auto'>

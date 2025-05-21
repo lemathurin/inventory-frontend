@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import axios from "axios";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import axios from 'axios';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Card,
   CardContent,
@@ -17,15 +17,15 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { apiUrl } from "@/config/api";
+} from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { apiUrl } from '@/config/api';
 
 const schema = z.object({
-  email: z.string().email({ message: "Invalid email address" }),
+  email: z.string().email({ message: 'Invalid email address' }),
   password: z
     .string()
-    .min(8, { message: "Password must be at least 8 characters" }),
+    .min(8, { message: 'Password must be at least 8 characters' }),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -45,73 +45,79 @@ export default function Login() {
     try {
       const response = await axios.post(apiUrl(`/users/login`), data);
 
-      console.log("Full response:", response);
-      console.log("Response data:", response.data);
+      console.log('Full response:', response);
+      console.log('Response data:', response.data);
 
       const { token, id, homeId } = response.data;
-      console.log("homeId received:", homeId);
+      console.log('homeId received:', homeId);
       if (token && homeId) {
-        localStorage.setItem("token", token);
-        localStorage.setItem("userId", id.toString());
+        localStorage.setItem('token', token);
+        localStorage.setItem('userId', id.toString());
         router.push(`/home/${homeId}`);
       } else {
         setError(
-          "Login successful, but home information is missing. Please try again."
+          'Login successful, but home information is missing. Please try again.'
         );
       }
     } catch (err) {
-      console.error("Login error:", err);
+      console.error('Login error:', err);
       setError(
-        "An error occurred during login. Please check your credentials and try again."
+        'An error occurred during login. Please check your credentials and try again.'
       );
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <Card className="w-full max-w-md">
+    <div className='flex items-center justify-center min-h-screen bg-gray-100'>
+      <Card className='w-full max-w-md'>
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">Login</CardTitle>
+          <CardTitle className='text-2xl font-bold'>Login</CardTitle>
           <CardDescription>
             Enter your credentials to access your account
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-4">
+          <CardContent className='space-y-4'>
             {error && (
-              <Alert variant="destructive">
+              <Alert variant='destructive'>
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+            <div className='space-y-2'>
+              <Label htmlFor='email'>Email</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                {...register("email")}
+                id='email'
+                type='email'
+                data-testid='email-input'
+                placeholder='you@example.com'
+                {...register('email')}
               />
               {errors.email && (
-                <p className="text-sm text-red-500">{errors.email.message}</p>
+                <p className='text-sm text-red-500'>{errors.email.message}</p>
               )}
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" {...register("password")} />
+            <div className='space-y-2'>
+              <Label htmlFor='password'>Password</Label>
+              <Input
+                id='password'
+                type='password'
+                {...register('password')}
+                data-testid='password-input'
+              />
               {errors.password && (
-                <p className="text-sm text-red-500">
+                <p className='text-sm text-red-500'>
                   {errors.password.message}
                 </p>
               )}
             </div>
           </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full">
+          <CardFooter className='flex flex-col space-y-4'>
+            <Button type='submit' className='w-full' data-testid='login-button'>
               Login
             </Button>
-            <span className="text-sm text-center text-gray-600">
-              Don&#39;t have an account?{" "}
-              <Link href="/signup" className="text-primary hover:underline">
+            <span className='text-sm text-center text-gray-600'>
+              Don&#39;t have an account?{' '}
+              <Link href='/signup' className='text-primary hover:underline'>
                 Sign up
               </Link>
             </span>

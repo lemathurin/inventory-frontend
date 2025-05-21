@@ -3,15 +3,28 @@ declare namespace Cypress {
   interface Chainable {
     registerUser(email: string, password: string, username: string): Chainable<void>;
     loginUser(email: string, password: string): Chainable<void>;
+    loginViaApi(email: string, password: string): Chainable<void>; // Ajout de cette définition manquante
     joinHouse(invitationCode: string): Chainable<void>;
     createItem(item: any): Chainable<void>;
     logout(): Chainable<void>;
   }
 }
 
+// Command for API login
+Cypress.Commands.add('loginViaApi', (email: string, password: string) => {
+  cy.request('POST', `${Cypress.env('API_URL')}/users/login`, {
+    email,
+    password,
+  }).then((response) => {
+    const { token, id } = response.body;
+    window.localStorage.setItem('token', token);
+    window.localStorage.setItem('userId', id);
+  });
+});
+
 // Command for user registration
 Cypress.Commands.add('registerUser', (email, password, username) => {
-  cy.visit('/register');
+  cy.visit('/signup');
   cy.get('[data-testid="email-input"]').type(email);
   cy.get('[data-testid="password-input"]').type(password);
   cy.get('[data-testid="username-input"]').type(username);
