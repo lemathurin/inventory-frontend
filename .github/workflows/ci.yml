@@ -9,7 +9,6 @@ on:
 jobs:
   lint-and-test:
     runs-on: ubuntu-latest
-
     services:
       postgres:
         image: postgres:14
@@ -27,10 +26,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
@@ -38,11 +37,14 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Lint
+      - name: Run Prettier Format Check
+        run: npm run format:check
+
+      - name: Run ESLint
         run: npm run lint
 
       - name: Type Check
-        run: npm run typecheck
+        run: npm run type-check
 
       - name: Build
         run: npm run build
@@ -50,15 +52,24 @@ jobs:
       - name: Run Unit Tests with Jest
         run: npm test
 
-      - name: Cypress Run
-        uses: cypress-io/github-action@v5
+      - name: Cypress E2E Tests
+        uses: cypress-io/github-action@v6
         with:
           build: npm run build
           start: npm start
-          wait-on: 'http://localhost:4000'
-          config: video=false
+          wait-on: 'http://localhost:3000'
+          wait-on-timeout: 120
+          browser: chrome
+          config: |
+            {
+              "video": false,
+              "screenshot": false
+            }
         env:
-          # test environement variables for Cypress
+          # Test environment variables for Cypress
+          NODE_ENV: test
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/testdb
-          NEXTAUTH_URL: http://localhost:4000
-          NEXTAUTH_SECRET: testsecret123
+          NEXTAUTH_URL: http://localhost:3000
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET_TEST || 'test-secret-key-for-ci-cd-pipeline-very-long' }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET_TEST || 'test-jwt-secret-key-for-ci-cd-pipeline-very-long' }}
+          API_URL: http://localhost:4000

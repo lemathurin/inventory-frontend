@@ -1,33 +1,21 @@
-// cypress.config.ts - For Cypress 10+
-
-import { defineConfig } from 'cypress';
-import { resetDatabase } from './cypress/support/db-setup';
+// cypress.config.ts
+import { defineConfig } from 'cypress'
 
 export default defineConfig({
   e2e: {
-    baseUrl: 'http://localhost:3000',
-      defaultCommandTimeout: 10000,
-    pageLoadTimeout: 30000,
-    retries: {
-      runMode: 2,
-      openMode: 0
-         },
-         chromeWebSecurity: false,
-    specPattern: 'cypress/e2e/**/*.{js,jsx,ts,tsx}',
-    supportFile: 'cypress/support/e2e.ts',
-    setupNodeEvents(on, config) {
-      // Configure tasks
-      on('task', {
-        async resetDB() {
-          await resetDatabase();
-          return null;
-        },
-      });
-      
-      return config;
+    baseUrl: 'http://localhost:3000', // Frontend
+    env: {
+      apiUrl: 'http://localhost:4000', // Backend
     },
+
+    supportFile: 'cypress/support/e2e.ts',
+    specPattern: 'cypress/e2e/**/*.cy.{js,jsx,ts,tsx}',
+    viewportWidth: 1280,
+    viewportHeight: 720,
+    video: false,
+    screenshotOnRunFailure: true,
+    defaultCommandTimeout: 10000,
+    requestTimeout: 10000,
+    responseTimeout: 10000,
   },
-  screenshotOnRunFailure: true,
-  viewportWidth: 1280,
-  viewportHeight: 720,
-});
+})

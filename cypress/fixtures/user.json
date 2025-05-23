@@ -1,5 +1,5 @@
 {
-  "username": "Alice",
-  "email": "alice@example.com",
+  "name": "Alice Test",
+  "email": "alicetest@example.com",
   "password": "strongPass123"
 }

@@ -21,6 +21,7 @@ import { useCreateHome } from '@/hooks/useCreateHome';
 
 const schema = z.object({
   name: z.string().min(1, { message: 'Home name is required' }),
+  address: z.string().min(1, { message: 'Home address is required' }),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -71,11 +72,24 @@ export default function Onboarding() {
                 id='home-name'
                 type='text'
                 placeholder='Name your home'
-                data-testid='invitation-code-input'
+                data-testid='home-name-input'
                 {...register('name')}
               />
               {errors.name && (
                 <p className='text-sm text-red-500'>{errors.name.message}</p>
+              )}
+            </div>
+            <div className='space-y-2'>
+              <Label htmlFor='home-address'>Home Address</Label>
+              <Input
+                id='home-address'
+                type='text'
+                placeholder='Enter your home address'
+                data-testid='home-address-input'
+                {...register('address')}
+              />
+              {errors.address && (
+                <p className='text-sm text-red-500'>{errors.address.message}</p>
               )}
             </div>
           </CardContent>
@@ -83,7 +97,7 @@ export default function Onboarding() {
             <Button
               type='submit'
               className='w-full'
-              data-testid='join-house-button'
+              data-testid='create-home-button'
             >
               Create Home
             </Button>

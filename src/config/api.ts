@@ -8,5 +8,4 @@
 //     return url;
 //   };
 
-  export const apiUrl = (path: string) =>
-  `${process.env.NEXT_PUBLIC_API_BASE_URL}${path}`;
+export const apiUrl = (path: string) => `http://localhost:4000${path}`;

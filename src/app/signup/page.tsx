@@ -19,7 +19,9 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { apiUrl } from '@/config/api';
+
+const API_BASE = 'http://localhost:4000';
+const apiUrl = (path: string) => `${API_BASE}${path}`;
 
 const schema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters' }),
@@ -44,26 +46,45 @@ export default function SignUp() {
 
   const onSubmit = async (data: FormData) => {
     try {
-      const response = await axios.post(apiUrl(`/users/register`), data);
+      console.log("🚀 Tentative d'inscription avec:", data);
 
-      console.log('Full response:', response);
-      console.log('Response data:', response.data);
+      // ENDPOINT FINAL CORRIGÉ
+      const response = await axios.post(apiUrl('/api/users/register'), data);
+
+      console.log('✅ Réponse reçue:', response);
+      console.log('📦 Data de la réponse:', response.data);
 
       const { token, id } = response.data;
+
       if (token) {
         localStorage.setItem('token', token);
         localStorage.setItem('userId', id.toString());
-        console.log('Token stored:', token);
-        console.log('User ID stored:', id);
+        console.log('💾 Token stocké:', token);
+        console.log('👤 User ID stocké:', id);
+        console.log('🔄 Redirection vers /onboarding');
         router.push('/onboarding');
       } else {
+        console.log('❌ Pas de token dans la réponse');
         setError(
           'Registration successful, but no token received. Please try logging in.'
         );
       }
     } catch (err) {
-      console.error('Signup error:', err);
-      setError('An error occurred during sign up');
+      console.error("❌ Erreur d'inscription:", err);
+
+      if (axios.isAxiosError(err)) {
+        console.log("🔍 Détails de l'erreur API:", {
+          status: err.response?.status,
+          data: err.response?.data,
+          message: err.message,
+        });
+
+        const errorMessage = err.response?.data?.message || err.message;
+        setError(`Inscription échouée: ${errorMessage}`);
+      } else {
+        console.log('🔍 Erreur non-Axios:', err);
+        setError("Une erreur inattendue s'est produite");
+      }
     }
   };
 
@@ -77,7 +98,7 @@ export default function SignUp() {
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className='space-y-4'>
             {error && (
-              <Alert variant='destructive'>
+              <Alert variant='destructive' data-testid='error-message'>
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}

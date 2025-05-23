@@ -43,27 +43,41 @@ export default function Login() {
 
   const onSubmit = async (data: FormData) => {
     try {
-      const response = await axios.post(apiUrl(`/users/login`), data);
+      // CORRIGÉ: Utiliser le bon endpoint
+      const response = await axios.post(apiUrl('/api/users/login'), data);
 
       console.log('Full response:', response);
       console.log('Response data:', response.data);
 
       const { token, id, homeId } = response.data;
       console.log('homeId received:', homeId);
-      if (token && homeId) {
+
+      if (token) {
         localStorage.setItem('token', token);
         localStorage.setItem('userId', id.toString());
-        router.push(`/home/${homeId}`);
+
+        // Si l'utilisateur a déjà un home, aller directement dessus
+        if (homeId) {
+          localStorage.setItem('currentHomeId', homeId.toString());
+          router.push(`/home/${homeId}`);
+        } else {
+          // Sinon, aller sur onboarding pour créer un home
+          router.push('/onboarding');
+        }
       } else {
-        setError(
-          'Login successful, but home information is missing. Please try again.'
-        );
+        setError('Login successful, but no authentication token received.');
       }
     } catch (err) {
       console.error('Login error:', err);
-      setError(
-        'An error occurred during login. Please check your credentials and try again.'
-      );
+
+      // Améliorer la gestion d'erreur
+      if (axios.isAxiosError(err)) {
+        const errorMessage =
+          err.response?.data?.message || 'Invalid credentials';
+        setError(`Login failed: ${errorMessage}`);
+      } else {
+        setError('An error occurred during login. Please try again.');
+      }
     }
   };
 
@@ -79,7 +93,7 @@ export default function Login() {
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className='space-y-4'>
             {error && (
-              <Alert variant='destructive'>
+              <Alert variant='destructive' data-testid='error-message'>
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}

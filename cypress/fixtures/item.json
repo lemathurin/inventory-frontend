@@ -1,8 +1,11 @@
 {
   "name": "Blender",
-  "description": "Kitchen blender",
+  "description": "Kitchen blender for smoothies and cooking",
   "purchaseDate": "2023-01-01",
-  "price": "59.99",
-  "warranty": "2",
+  "price": 59.99,
+  "hasWarranty": true,
+  "warrantyType": "manufacturer",
+  "warrantyLength": 2,
+  "public": false,
   "otherUserItemId": "999"
 }

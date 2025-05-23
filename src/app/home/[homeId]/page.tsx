@@ -62,58 +62,62 @@ export default function Home() {
     try {
       const token = localStorage.getItem('token');
       console.log('Fetching items for homeId:', homeId);
-      const response = await axios.get(apiUrl(`/homes/${homeId}/items`), {
+
+      // CORRIGÉ: Endpoint avec /homes/
+      const response = await axios.get(apiUrl(`/api/homes/${homeId}/items`), {
         headers: { Authorization: `Bearer ${token}` },
       });
       console.log('Items received:', response.data.length);
       setItems(response.data);
     } catch (err) {
+      console.error('Fetch items error:', err);
+      if (axios.isAxiosError(err)) {
+        console.log('API Error:', err.response?.status, err.response?.data);
+      }
       setError('Failed to fetch items');
-      console.error(err);
     }
   };
 
   const addItem = async (e: React.FormEvent) => {
-    // Prevent the default form submission behavior
     e.preventDefault();
-
-    // Reset any existing error messages
     setError('');
 
-    // Check if the new item name is empty or consists only of whitespace
     if (!newItemName.trim()) {
-      setError('Item name cannot be empty'); // Set an error message if the item name is empty
-      return; // Exit the function early if the item name is invalid
+      setError('Item name cannot be empty');
+      return;
     }
+
     try {
-      // Retrieve the authentication token from local storage
       const token = localStorage.getItem('token');
 
-      // Make a POST request to add a new item to the specified home
+      // CORRIGÉ: Endpoint avec /homes/ et /items (pluriel)
       const response = await axios.post(
-        apiUrl(`/homes/${homeId}/items`), // Construct the URL with the homeId
-        { name: newItemName, description: newItemDescription }, // Data to be sent in the request body
-        { headers: { Authorization: `Bearer ${token}` } } // Include the token in the request headers for authentication
+        apiUrl(`/api/homes/${homeId}/item`),
+        { name: newItemName, description: newItemDescription },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-      // Update the items state with the newly added item
-      setItems([...items, response.data]);
 
-      // Reset the input fields for the new item
+      setItems([...items, response.data]);
       setNewItemName('');
       setNewItemDescription('');
     } catch (error) {
-      // Handle any errors that occur during the request
+      console.error('Add item error:', error);
       if (error instanceof AxiosError) {
-        // Check if the error is an AxiosError
-        console.error('Error adding item:', error); // Log the error to the console
-        // Set an error message based on the response from the server or the error message
+        console.log('API Error details:', {
+          status: error.response?.status,
+          data: error.response?.data,
+          url: error.config?.url,
+        });
         setError(
           'Failed to add item: ' +
-            (error.response?.data?.error || error.message) // Use the error message from the response if available
+            (error.response?.data?.error ||
+              error.response?.data?.message ||
+              error.message)
         );
       }
     }
   };
+
   const openItemDialog = (item: Item) => {
     setSelectedItem(item);
     setIsDialogOpen(true);
@@ -130,11 +134,14 @@ export default function Home() {
 
     try {
       const token = localStorage.getItem('token');
+
+      // CORRIGÉ: Endpoint avec /homes/
       const response = await axios.put(
-        apiUrl(`/homes/${homeId}/items/${selectedItem.id}`),
+        apiUrl(`/api/homes/${homeId}/items/${selectedItem.id}`),
         selectedItem,
         { headers: { Authorization: `Bearer ${token}` } }
       );
+
       setItems(
         items.map((item) =>
           item.id === selectedItem.id ? response.data : item
@@ -142,8 +149,8 @@ export default function Home() {
       );
       closeItemDialog();
     } catch (error) {
+      console.error('Update item error:', error);
       if (error instanceof AxiosError) {
-        console.error('Error updating item:', error);
         setError(
           'Failed to update item: ' +
             (error.response?.data?.error || error.message)
@@ -154,16 +161,23 @@ export default function Home() {
 
   const deleteItem = async () => {
     if (!selectedItem) return;
+
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(apiUrl(`/homes/${homeId}/items/${selectedItem.id}`), {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+
+      // CORRIGÉ: Endpoint avec /homes/
+      await axios.delete(
+        apiUrl(`/api/homes/${homeId}/items/${selectedItem.id}`),
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
       setItems(items.filter((item) => item.id !== selectedItem.id));
       closeItemDialog();
     } catch (error) {
+      console.error('Delete item error:', error);
       if (error instanceof AxiosError) {
-        console.error('Error deleting item:', error);
         setError(
           'Failed to delete item: ' +
             (error.response?.data?.error || error.message)
@@ -182,7 +196,7 @@ export default function Home() {
           <CardDescription>Manage your household items here</CardDescription>
           <Button
             onClick={() => {
-              router.push(`/home/${homeId}/settings`);
+              router.push(`/${homeId}`);
             }}
             aria-label='Settings'
           >
