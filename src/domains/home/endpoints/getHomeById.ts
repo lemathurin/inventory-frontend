@@ -2,7 +2,7 @@ import { apiUrl } from "@/config/api";
 
 export async function getHomeById(homeId: string) {
   try {
-    const response = await fetch(apiUrl(`/home/${homeId}`), {
+    const response = await fetch(apiUrl(`/homes/${homeId}`), {
       credentials: "include",
     });
 

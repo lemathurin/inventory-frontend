@@ -3,7 +3,7 @@ import { apiUrl } from "@/config/api";
 
 export async function createHome(name: string, address: string) {
   const response = await axios.post(
-    apiUrl("/home/create-home"),
+    apiUrl("/homes/"),
     { name, address },
     { withCredentials: true },
   );

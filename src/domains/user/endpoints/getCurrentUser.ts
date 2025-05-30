@@ -3,7 +3,7 @@ import { UserModel } from "../user.types";
 
 export async function getCurrentUser(): Promise<UserModel | null> {
   try {
-    const response = await fetch(apiUrl("/user/me"), {
+    const response = await fetch(apiUrl("/users/me"), {
       credentials: "include",
     });
 
