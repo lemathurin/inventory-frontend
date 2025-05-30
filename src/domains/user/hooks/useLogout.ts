@@ -8,7 +8,7 @@ export function useLogout() {
   const logout = async () => {
     try {
       await axios.post(
-        apiUrl("/user/logout"),
+        apiUrl("/auth/logout"),
         {},
         {
           withCredentials: true,

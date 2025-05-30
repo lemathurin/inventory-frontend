@@ -19,7 +19,7 @@ export function useLogin() {
   async function handleLogin(data: FormData) {
     try {
       const response = await axios.post<LoginResponse>(
-        apiUrl(`/user/login`),
+        apiUrl(`/auth/login`),
         data,
         { withCredentials: true },
       );

@@ -5,7 +5,7 @@ export async function createUser(
   email: string,
   password: string,
 ): Promise<void> {
-  const response = await fetch(apiUrl("/user/register"), {
+  const response = await fetch(apiUrl("/auth/register"), {
     method: "POST",
     credentials: "include",
     headers: {
