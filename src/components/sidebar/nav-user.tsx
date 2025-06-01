@@ -40,7 +40,16 @@ export function NavUser({
 }) {
   const router = useRouter();
   const { isMobile } = useSidebar();
-  const { logout } = useLogout();
+  const logout = useLogout();
+
+  async function handleLogout() {
+    try {
+      await logout();
+      window.location.href = "/login";
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  }
 
   return (
     <SidebarMenu>
@@ -105,7 +114,7 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => logout()}>
+            <DropdownMenuItem onClick={handleLogout}>
               <LogOut />
               Log out
             </DropdownMenuItem>
