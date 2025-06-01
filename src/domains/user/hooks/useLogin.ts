@@ -1,11 +1,6 @@
-import axios from "axios";
-import { useState } from "react";
-import { apiUrl } from "@/config/api";
-
-type FormData = {
-  email: string;
-  password: string;
-};
+import axios from "@/lib/axios";
+import { isAxiosError } from "axios";
+import { AUTH_ENDPOINTS } from "../constants/endpoints";
 
 type LoginResponse = {
   id: string;
@@ -14,29 +9,19 @@ type LoginResponse = {
 };
 
 export function useLogin() {
-  const [error, setError] = useState<string | null>(null);
-
-  async function handleLogin(data: FormData) {
+  return async (email: string, password: string): Promise<LoginResponse> => {
     try {
-      const response = await axios.post<LoginResponse>(
-        apiUrl(`/auth/login`),
-        data,
-        { withCredentials: true },
-      );
-
-      // NOTE: Redirect to onboarding if no home
-      const target = response.data.hasHome
-        ? `/home/${response.data.homeId}`
-        : "/onboarding/start/";
-      window.location.href = target;
-
+      const response = await axios.post<LoginResponse>(AUTH_ENDPOINTS.login, {
+        email,
+        password,
+      });
       return response.data;
     } catch (err) {
-      console.error("Login error:", err);
-      setError("An error occurred. Please check your credentials.");
-      throw err;
+      if (isAxiosError(err)) {
+        throw new Error(err.response?.data?.error || "Failed to login");
+      } else {
+        throw new Error("Failed to login");
+      }
     }
-  }
-
-  return { handleLogin, error };
+  };
 }

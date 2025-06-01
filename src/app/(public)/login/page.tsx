@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useLogin } from "@/domains/user/hooks/useLogin";
+import { useState } from "react";
 
 const schema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -28,7 +29,8 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export default function Login() {
-  const { handleLogin, error } = useLogin();
+  const [error, setError] = useState<string | null>(null);
+  const loginUser = useLogin();
   const {
     register,
     handleSubmit,
@@ -39,9 +41,14 @@ export default function Login() {
 
   async function onSubmit(data: FormData) {
     try {
-      await handleLogin(data);
+      const response = await loginUser(data.email, data.password);
+      const target = response.hasHome
+        ? `/home/${response.homeId}`
+        : "/onboarding/start/";
+      window.location.href = target;
     } catch (err) {
       console.error("Login error:", err);
+      setError("An error occurred during login");
     }
   }
 
