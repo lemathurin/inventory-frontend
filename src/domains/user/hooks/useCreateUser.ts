@@ -1,5 +1,6 @@
 import axios from "@/lib/axios";
 import { isAxiosError } from "axios";
+import { AUTH_ENDPOINTS } from "../constants/endpoints";
 
 export function useCreateUser() {
   return async (
@@ -8,7 +9,7 @@ export function useCreateUser() {
     password: string,
   ): Promise<void> => {
     try {
-      await axios.post("/auth/register", { name, email, password });
+      await axios.post(AUTH_ENDPOINTS.register, { name, email, password });
     } catch (err) {
       if (isAxiosError(err)) {
         throw new Error(err.response?.data?.error || "Failed to create user");
