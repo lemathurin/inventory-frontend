@@ -1,26 +1,19 @@
-import { useEffect, useState } from "react";
-import { getCurrentUser } from "../endpoints/getCurrentUser";
-import { UserModel } from "../user.types";
+import axios from "@/lib/axios";
+import { isAxiosError } from "axios";
+import { USER_ENDPOINTS } from "../constants/endpoints";
 
 export function useGetCurrentUser() {
-  const [userData, setUserData] = useState<UserModel | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const userData = await getCurrentUser();
-        setUserData(userData);
-        console.log("Fetched user data with useGetCurrentUser:", userData);
-      } catch (err) {
-        console.error("Error fetching current user:", err);
-      } finally {
-        setLoading(false);
+  return async (): Promise<void> => {
+    try {
+      await axios.get(USER_ENDPOINTS.me);
+    } catch (err) {
+      if (isAxiosError(err)) {
+        throw new Error(
+          err.response?.data?.error || "Failed to get current user",
+        );
+      } else {
+        throw new Error("Failed to get current user");
       }
-    };
-
-    fetchUser();
-  }, []);
-
-  return { userData, loading };
+    }
+  };
 }
