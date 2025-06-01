@@ -33,7 +33,7 @@ type FormData = z.infer<typeof schema>;
 export default function SignUp() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const { createNewUser, isLoading } = useCreateUser();
+  const createNewUser = useCreateUser();
   const {
     register,
     handleSubmit,
@@ -101,8 +101,15 @@ export default function SignUp() {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Signing Up..." : "Sign Up"}
+            <Button
+              type="submit"
+              className="w-full"
+              // disabled={isLoading}
+            >
+              {
+                // isLoading ? "Signing Up..." :
+                "Sign Up"
+              }
             </Button>
             <p className="text-sm text-center text-gray-600">
               Already have an account?{" "}
