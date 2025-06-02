@@ -1,27 +1,17 @@
-import { useEffect, useState } from "react";
-import { getHomeById } from "../endpoints/getHomeById";
+import axios from "@/lib/axios";
+import { HOME_ENDPOINTS } from "../endpoints";
 import { HomeModel } from "@/domains/home/home.types";
 
-export function useGetHomeById(homeId: string) {
-  const [homeData, setHomeData] = useState<HomeModel | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchHome = async () => {
-      try {
-        const data = await getHomeById(homeId);
-        setHomeData(data);
-      } catch (err) {
-        console.error("Error fetching home data:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (homeId) {
-      fetchHome();
+export function useGetHomeById() {
+  return async (homeId: string): Promise<HomeModel> => {
+    try {
+      const response = await axios.get<HomeModel>(
+        `${HOME_ENDPOINTS.home}/${homeId}`,
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Could not fetch home", error);
+      throw error;
     }
-  }, [homeId]);
-
-  return { homeData, isLoading };
+  };
 }
