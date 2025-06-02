@@ -2,9 +2,15 @@ import axios from "@/lib/axios";
 import { USER_ENDPOINTS } from "../constants/endpoints";
 
 export function useUpdateUserPassword() {
-  return async (password: string): Promise<void> => {
+  return async (
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<void> => {
     try {
-      await axios.patch(USER_ENDPOINTS.updatePassword, { password });
+      await axios.patch(USER_ENDPOINTS.updatePassword, {
+        currentPassword,
+        newPassword,
+      });
     } catch (error) {
       console.error("Could not update password", error);
       throw error;
