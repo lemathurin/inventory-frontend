@@ -1,5 +1,5 @@
 import axios from "@/lib/axios";
-import { USER_ENDPOINTS } from "../constants/endpoints";
+import { USER_ENDPOINTS } from "../endpoints";
 
 export function useUpdateUserPassword() {
   return async (

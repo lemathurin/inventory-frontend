@@ -17,8 +17,7 @@ import {
   Sun,
 } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar";
-import { useGetCurrentUser } from "@/domains/user/hooks/useGetCurrentUser";
-import { useLogout } from "@/domains/user/hooks/useLogout";
+import { useUser } from "@/contexts/user.context";
 import { useTheme } from "next-themes";
 
 export default function ClientLogoutButton() {
@@ -26,8 +25,7 @@ export default function ClientLogoutButton() {
   const router = useRouter();
   const hideOnPaths = ["/", "/login", "/signup"];
   const { toggleSidebar, state } = useSidebar();
-  const { userData } = useGetCurrentUser();
-  const { logout } = useLogout();
+  const { userData } = useUser();
   const { setTheme } = useTheme();
 
   if (hideOnPaths.includes(pathname)) {
@@ -35,7 +33,7 @@ export default function ClientLogoutButton() {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 flex gap-2">
+    <div className="fixed bottom-4 right-4 flex gap-2 z-50">
       <Button>
         {userData && `User: ${userData.name} (ID: ${userData.id})`}
       </Button>
@@ -46,16 +44,6 @@ export default function ClientLogoutButton() {
           <PanelLeft className="h-5 w-5" />
         )}
       </Button>
-      {/* <Button
-        onClick={() => setTheme("light")}
-        size="icon"
-        aria-label="Toggle theme"
-      >
-        <Moon className="h-5 w-5" />
-      </Button> */}
-      {/* <Button onClick={logout} size="icon" aria-label="Logout">
-        <LogOut className="h-5 w-5" />
-      </Button> */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="default" size="icon">

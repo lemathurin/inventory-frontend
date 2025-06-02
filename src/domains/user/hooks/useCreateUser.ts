@@ -1,6 +1,6 @@
 import axios from "@/lib/axios";
 import { isAxiosError } from "axios";
-import { AUTH_ENDPOINTS } from "../constants/endpoints";
+import { AUTH_ENDPOINTS } from "../endpoints";
 
 export function useCreateUser() {
   return async (

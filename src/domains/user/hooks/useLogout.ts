@@ -1,5 +1,5 @@
 import axios from "@/lib/axios";
-import { AUTH_ENDPOINTS } from "../constants/endpoints";
+import { AUTH_ENDPOINTS } from "../endpoints";
 
 export function useLogout() {
   return async (): Promise<void> => {

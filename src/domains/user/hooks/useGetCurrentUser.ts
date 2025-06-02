@@ -1,6 +1,6 @@
 import axios from "@/lib/axios";
 import { isAxiosError } from "axios";
-import { USER_ENDPOINTS } from "../constants/endpoints";
+import { USER_ENDPOINTS } from "../endpoints";
 import { UserModel } from "../user.types";
 
 export function useGetCurrentUser() {
