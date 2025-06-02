@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
 import {
   AudioWaveform,
   BookOpen,
@@ -158,7 +156,7 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const userData = useUser();
+  const { userData } = useUser();
 
   if (!userData) {
     return null;
