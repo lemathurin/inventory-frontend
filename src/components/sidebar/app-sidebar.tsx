@@ -26,6 +26,7 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { useGetCurrentUser } from "@/domains/user/hooks/useGetCurrentUser";
+import { UserModel } from "@/domains/user/user.types";
 
 // This is sample data.
 const data = {
@@ -159,11 +160,23 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
-  const hideOnPaths = ["/", "/login", "/signup", "/onboarding"];
-  const { userData, loading } = useGetCurrentUser();
+  const getCurrentUser = useGetCurrentUser();
+  const [userData, setUserData] = useState<UserModel | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  if (hideOnPaths.includes(pathname)) {
-    return null;
+  useEffect(() => {
+    fetchUserData();
+  }, []);
+
+  async function fetchUserData() {
+    try {
+      const data = await getCurrentUser();
+      setUserData(data);
+    } catch (error) {
+      console.error("Failed to fetch user data:", error);
+    } finally {
+      setLoading(false);
+    }
   }
 
   if (loading || !userData) {

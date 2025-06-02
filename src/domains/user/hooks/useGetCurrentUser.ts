@@ -1,11 +1,13 @@
 import axios from "@/lib/axios";
 import { isAxiosError } from "axios";
 import { USER_ENDPOINTS } from "../constants/endpoints";
+import { UserModel } from "../user.types";
 
 export function useGetCurrentUser() {
-  return async (): Promise<void> => {
+  return async (): Promise<UserModel> => {
     try {
-      await axios.get(USER_ENDPOINTS.me);
+      const response = await axios.get(USER_ENDPOINTS.me);
+      return response.data;
     } catch (err) {
       if (isAxiosError(err)) {
         throw new Error(
