@@ -25,8 +25,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { useGetCurrentUser } from "@/domains/user/hooks/useGetCurrentUser";
-import { UserModel } from "@/domains/user/user.types";
+import { useUser } from "@/contexts/user.context";
 
 // This is sample data.
 const data = {
@@ -159,27 +158,9 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const pathname = usePathname();
-  const getCurrentUser = useGetCurrentUser();
-  const [userData, setUserData] = useState<UserModel | null>(null);
-  const [loading, setLoading] = useState(true);
+  const userData = useUser();
 
-  useEffect(() => {
-    fetchUserData();
-  }, []);
-
-  async function fetchUserData() {
-    try {
-      const data = await getCurrentUser();
-      setUserData(data);
-    } catch (error) {
-      console.error("Failed to fetch user data:", error);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  if (loading || !userData) {
+  if (!userData) {
     return null;
   }
 
