@@ -15,11 +15,12 @@ import OnboardingHeader from "@/components/onboarding/OnboardingHeader";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useCreateRoom } from "@/domains/room/hooks/useCreateRoom";
+import { useRouter } from "next/navigation";
 
 export default function OnboardingCreateStep2() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const createRoom = useCreateRoom();
   const [roomName, setRoomName] = useState("");
   const [rooms, setRooms] = useState<string[]>([]);
 
@@ -34,12 +35,19 @@ export default function OnboardingCreateStep2() {
     setRooms(rooms.filter((_, index) => index !== indexToRemove));
   }
 
-  function handleFinish() {
-    const homeId = searchParams.get("homeId");
+  async function handleFinish() {
+    const homeId = sessionStorage.getItem("homeId");
     if (homeId) {
-      router.push(`/home/${homeId}`);
+      try {
+        await Promise.all(rooms.map((room) => createRoom(homeId, room)));
+        sessionStorage.removeItem("homeId");
+        router.push(`/home/${homeId}`);
+      } catch (err) {
+        console.error("Failed to create one or more rooms:", err);
+      }
     } else {
       console.error("Home ID is missing, cannot finish onboarding.");
+      router.back();
     }
   }
 
