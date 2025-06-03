@@ -6,7 +6,7 @@ export function useGetHomeById() {
   return async (homeId: string): Promise<HomeModel> => {
     try {
       const response = await axios.get<HomeModel>(
-        `${HOME_ENDPOINTS.home}/${homeId}`,
+        HOME_ENDPOINTS.home.replace(":homeId", homeId),
       );
       return response.data;
     } catch (error) {

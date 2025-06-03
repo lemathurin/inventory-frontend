@@ -26,6 +26,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     try {
       const data = await getCurrentUser();
       setUserData(data);
+      console.log("User context", data);
     } catch (error) {
       console.error("Failed to refresh user data:", error);
     }
