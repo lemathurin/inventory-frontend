@@ -1,4 +1,4 @@
-import ClientLogoutButton from "@/components/ClientLogoutButton";
+// import ClientLogoutButton from "@/components/ClientLogoutButton";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { UserProvider } from "@/contexts/user.context";
@@ -15,7 +15,7 @@ export default function RootLayout({
         <SidebarProvider>
           <AppSidebar />
           <SidebarInset>
-            <ClientLogoutButton />
+            {/* <ClientLogoutButton /> */}
             {children}
           </SidebarInset>
         </SidebarProvider>
