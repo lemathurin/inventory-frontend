@@ -10,7 +10,7 @@ export function useUpdateHome() {
     try {
       await axios.patch(`${HOME_ENDPOINTS.home}/${homeId}`, { name, address });
     } catch (error) {
-      console.error("Could not fetch home", error);
+      console.error("Could not update home", error);
       throw error;
     }
   };
