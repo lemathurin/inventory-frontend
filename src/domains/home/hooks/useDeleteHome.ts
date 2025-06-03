@@ -6,7 +6,7 @@ export function useDeleteHome() {
     try {
       await axios.delete(`${HOME_ENDPOINTS.home}/${homeId}`);
     } catch (error) {
-      console.error("Could not fetch home", error);
+      console.error("Could not delete home", error);
       throw error;
     }
   };
