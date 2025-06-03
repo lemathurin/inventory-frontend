@@ -16,7 +16,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { userData } = useUser();
 
   if (!userData) {
-    return null;
+    return <Sidebar />;
   }
 
   return (
