@@ -4,7 +4,8 @@ import { ROOM_ENDPOINTS } from "../endpoints";
 export function useUpdateRoom() {
   return async (roomId: string, name?: string): Promise<void> => {
     try {
-      await axios.patch(`${ROOM_ENDPOINTS.room}/${roomId}`, { name });
+      const endpoint = ROOM_ENDPOINTS.room.replace(":roomId", roomId);
+      await axios.patch(endpoint, { name });
     } catch (error) {
       console.error("Could not update room", error);
       throw error;
