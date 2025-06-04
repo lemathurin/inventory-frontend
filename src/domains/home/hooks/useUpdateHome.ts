@@ -8,7 +8,8 @@ export function useUpdateHome() {
     address?: string,
   ): Promise<void> => {
     try {
-      await axios.patch(`${HOME_ENDPOINTS.home}/${homeId}`, { name, address });
+      const endpoint = HOME_ENDPOINTS.home.replace(":homeId", homeId);
+      await axios.patch(endpoint, { name, address });
     } catch (error) {
       console.error("Could not update home", error);
       throw error;
