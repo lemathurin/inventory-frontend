@@ -9,7 +9,8 @@ export function useCreateItem() {
     description?: string,
   ): Promise<void> => {
     try {
-      await axios.post(`${ITEM_ENDPOINTS.createItem}/${homeId}`, {
+      const endpoint = ITEM_ENDPOINTS.createItem.replace(":homeId", homeId);
+      await axios.post(endpoint, {
         name,
         roomId,
         description,

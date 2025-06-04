@@ -15,7 +15,8 @@ export function useUpdateItem() {
     warrantyLength?: number,
   ): Promise<void> => {
     try {
-      await axios.patch(`${ITEM_ENDPOINTS.item}/${itemId}`, {
+      const endpoint = ITEM_ENDPOINTS.item.replace(":itemId", itemId);
+      await axios.patch(endpoint, {
         name,
         description,
         roomId,
