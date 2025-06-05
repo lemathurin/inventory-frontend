@@ -11,7 +11,6 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -69,7 +68,7 @@ export function HomeSwitcher({
             <DropdownMenuLabel className="text-xs text-muted-foreground">
               Homes
             </DropdownMenuLabel>
-            {homes.map((home, index) => (
+            {homes.map((home) => (
               <DropdownMenuItem
                 key={home.homeId}
                 className="gap-2 p-2"

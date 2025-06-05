@@ -1,13 +1,11 @@
 "use client";
 
 import {
-  ChevronDown,
   ChevronRight,
   FileText,
   LayoutDashboard,
   Shapes,
   Square,
-  type LucideIcon,
 } from "lucide-react";
 
 import {
@@ -18,7 +16,6 @@ import {
 import {
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
