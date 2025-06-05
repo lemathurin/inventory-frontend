@@ -39,11 +39,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { useCreateItem } from "@/domains/item/hooks/useCreateItem";
 import { useHome } from "@/contexts/home.context";
 import { useGetRoomsByHomeId } from "@/domains/home/hooks/useGetRoomsByHomeId";
 import type { RoomModel } from "@/domains/room/room.types";
+import { ErrorMessage } from "@/components/ErrorMessage";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -61,17 +62,6 @@ const formSchema = z.object({
 });
 
 type FormData = z.infer<typeof formSchema>;
-
-const ErrorMessage = ({ error }: { error?: string }) => {
-  if (!error) return null;
-
-  return (
-    <div className="flex items-center gap-2 mt-1 p-2 bg-red-50 border border-red-200 rounded-md">
-      <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
-      <span className="text-sm text-red-700">{error}</span>
-    </div>
-  );
-};
 
 export default function CreateItemForm() {
   const { homeData } = useHome();
