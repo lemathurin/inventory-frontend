@@ -37,7 +37,7 @@ export function NavMain() {
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
-                <Link href="#">
+                <Link href={`/home/${homeData?.id}`}>
                   <LayoutDashboard />
                   <span>Dashboard</span>
                 </Link>
