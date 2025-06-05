@@ -2,6 +2,7 @@
 
 import {
   ChevronRight,
+  CirclePlus,
   FileText,
   LayoutDashboard,
   Shapes,
@@ -67,12 +68,27 @@ export function NavMain() {
               </Collapsible>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <Link href="#">
-                  <Shapes />
-                  <span>Items</span>
-                </Link>
-              </SidebarMenuButton>
+              <Collapsible className="group/collapsible">
+                <CollapsibleTrigger asChild>
+                  <SidebarMenuButton>
+                    <Shapes />
+                    <span>Items</span>
+                    <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                  </SidebarMenuButton>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarMenuSub>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton asChild>
+                        <Link href={`/home/${homeData?.id}/create-item`}>
+                          <CirclePlus />
+                          <span>Create Item</span>
+                        </Link>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  </SidebarMenuSub>
+                </CollapsibleContent>
+              </Collapsible>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild>

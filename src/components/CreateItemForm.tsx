@@ -29,7 +29,7 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { format } from "date-fns";
-import { CalendarIcon, Upload, X } from "lucide-react";
+import { CalendarIcon, CirclePlus, Upload, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -465,6 +465,7 @@ export default function CreateItemForm() {
             </div>
 
             <Button type="submit" disabled={isSubmitting} className="w-full">
+              <CirclePlus />
               {isSubmitting ? "Creating Item..." : "Create Item"}
             </Button>
           </form>
