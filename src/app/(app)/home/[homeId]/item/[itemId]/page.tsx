@@ -4,10 +4,19 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ItemModel } from "@/domains/item/item.types";
 
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import {
+  Calendar,
+  Eye,
+  Shield,
+  Clock,
+  Euro,
+  FileText,
+  Square,
+} from "lucide-react";
 
 export default function ItemPage() {
   const { itemId } = useParams();
@@ -59,41 +68,55 @@ export default function ItemPage() {
 
       {item.description && (
         <Card className="p-4">
-          <Label className="text-muted-foreground">Description</Label>
-          <p>{item.description}</p>
+          <div className="flex items-center gap-1">
+            <FileText className="h-4 w-4 text-muted-foreground" />
+            <Label className="text-muted-foreground">Description</Label>
+          </div>
+          <p className="mt-2">{item.description}</p>
         </Card>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-8">
         {item.price && (
           <Card className="p-4">
-            <Label className="text-muted-foreground">Price</Label>
-            <p>€{item.price}</p>
+            <div className="flex items-center gap-1">
+              <Euro className="h-4 w-4 text-muted-foreground" />
+              <Label className="text-muted-foreground">Price</Label>
+            </div>
+            <p className="mt-2">€{item.price}</p>
           </Card>
         )}
         <Card className="p-4">
-          <Label className="text-muted-foreground">Purchased</Label>
-          <p className="text-lg font-medium">
+          <div className="flex items-center gap-1">
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <Label className="text-muted-foreground">Purchased</Label>
+          </div>
+          <p className="mt-2">
             {item.purchaseDate
               ? new Date(item.purchaseDate).toLocaleDateString()
               : "N/A"}
           </p>
         </Card>
         <Card className="p-4">
-          <Label className="text-muted-foreground">Location</Label>
-          <p className="text-lg font-medium">
-            {item.rooms?.[0]?.name || "No room assigned"}
-          </p>
+          <div className="flex items-center gap-1">
+            <Square className="h-4 w-4 text-muted-foreground" />
+            <Label className="text-muted-foreground">Location</Label>
+          </div>
+          <p className="mt-2">{item.rooms?.[0]?.name || "No room assigned"}</p>
         </Card>
         <Card className="p-4">
-          <Label className="text-muted-foreground">Visibility</Label>
-          <p className="text-lg font-medium">
-            {item.public ? "Public" : "Private"}
-          </p>
+          <div className="flex items-center gap-1">
+            <Eye className="h-4 w-4 text-muted-foreground" />
+            <Label className="text-muted-foreground">Visibility</Label>
+          </div>
+          <p className="mt-2">{item.public ? "Public" : "Private"}</p>
         </Card>
         <Card className="p-4">
-          <Label className="text-muted-foreground">Warranty</Label>
-          <p className="text-lg font-medium">
+          <div className="flex items-center gap-1">
+            <Shield className="h-4 w-4 text-muted-foreground" />
+            <Label className="text-muted-foreground">Warranty</Label>
+          </div>
+          <p className="mt-2">
             {!item.hasWarranty
               ? "None"
               : item.warrantyType === "lifetime"
@@ -103,8 +126,11 @@ export default function ItemPage() {
         </Card>
         {item.hasWarranty && item.warrantyType === "extended" && (
           <Card className="p-4">
-            <Label className="text-muted-foreground">Warranty Length</Label>
-            <p className="text-lg font-medium">{item.warrantyLength} years</p>
+            <div className="flex items-center gap-1">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              <Label className="text-muted-foreground">Warranty Length</Label>
+            </div>
+            <p className="mt-2">{item.warrantyLength} years</p>
           </Card>
         )}
       </div>
