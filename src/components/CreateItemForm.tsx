@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -42,8 +42,6 @@ import {
 import { AlertCircle } from "lucide-react";
 import { useCreateItem } from "@/domains/item/hooks/useCreateItem";
 import { useHome } from "@/contexts/home.context";
-import { useGetRoomsByHomeId } from "@/domains/home/hooks/useGetRoomsByHomeId";
-import type { RoomModel } from "@/domains/room/room.types";
 import { ErrorMessage } from "@/components/ErrorMessage";
 
 const formSchema = z.object({
@@ -66,8 +64,6 @@ type FormData = z.infer<typeof formSchema>;
 export default function CreateItemForm() {
   const { homeData } = useHome();
   const createItem = useCreateItem();
-  const getRoomsByHomeId = useGetRoomsByHomeId();
-  const [rooms, setRooms] = useState<RoomModel[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -89,17 +85,6 @@ export default function CreateItemForm() {
   const hasWarranty = form.watch("hasWarranty");
   const warrantyType = form.watch("warrantyType");
 
-  useEffect(() => {
-    if (homeData) {
-      getRoomsByHomeId(homeData.id)
-        .then(setRooms)
-        .catch((error) => {
-          console.error("Failed to fetch rooms:", error);
-          setError("Failed to load rooms. Please try again.");
-        });
-    }
-  }, [homeData]); // Updated to use homeData directly
-
   if (!homeData) {
     return (
       <Card className="p-6">
@@ -115,7 +100,7 @@ export default function CreateItemForm() {
     setError(null);
 
     try {
-      const result = await createItem(
+      await createItem(
         homeData!.id,
         data.name,
         data.roomId,
@@ -137,7 +122,7 @@ export default function CreateItemForm() {
   }
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
+    <Card className="w-full mx-auto">
       <CardHeader>
         <CardTitle>Create New Item</CardTitle>
         <CardDescription>Add a new item to your home inventory</CardDescription>
@@ -289,11 +274,11 @@ export default function CreateItemForm() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {rooms.map((room) => (
+                        {homeData.rooms?.map((room) => (
                           <SelectItem key={room.id} value={room.id}>
                             {room.name}
                           </SelectItem>
-                        ))}
+                        )) ?? []}
                       </SelectContent>
                     </Select>
                     <ErrorMessage
