@@ -360,10 +360,10 @@ export default function CreateItemForm() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="extendedWarranty">
+                              <SelectItem value="extended">
                                 Extended warranty
                               </SelectItem>
-                              <SelectItem value="lifetimeWarranty">
+                              <SelectItem value="lifetime">
                                 Lifetime warranty
                               </SelectItem>
                             </SelectContent>
@@ -386,7 +386,7 @@ export default function CreateItemForm() {
                               type="number"
                               step="1"
                               placeholder="e.g., 2"
-                              disabled={warrantyType === "lifetimeWarranty"}
+                              disabled={warrantyType === "lifetime"}
                               {...field}
                               onChange={(e) =>
                                 field.onChange(
