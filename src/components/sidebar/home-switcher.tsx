@@ -1,8 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { ChevronsUpDown, Plus, Settings } from "lucide-react";
+import { ChevronsUpDown, HouseIcon, Plus, Settings } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useHome } from "@/contexts/home.context";
 
 import {
   DropdownMenu,
@@ -10,7 +11,6 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -19,7 +19,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useParams } from "next/navigation";
+import { getInitials } from "@/lib/utils";
 
 export function HomeSwitcher({
   homes,
@@ -32,14 +32,11 @@ export function HomeSwitcher({
     };
   }[];
 }) {
-  const { isMobile } = useSidebar();
-  const { homeId } = useParams();
   const router = useRouter();
+  const { isMobile } = useSidebar();
+  const { homeData } = useHome();
 
-  // Find the active home based on homeId
-  const activeHome = homes.find((home) => home.homeId === homeId) || homes[0];
-
-  if (!activeHome) {
+  if (!homeData) {
     return null;
   }
 
@@ -53,15 +50,11 @@ export function HomeSwitcher({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                {/* <activeHome.logo className="size-4" /> */}
+                {getInitials(homeData.name)}
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">
-                  {activeHome.home.name}
-                </span>
-                <span className="truncate text-xs">
-                  {activeHome.home.address}
-                </span>
+                <span className="truncate font-semibold">{homeData.name}</span>
+                <span className="truncate text-xs">{homeData.address}</span>
               </div>
               <ChevronsUpDown className="ml-auto" />
             </SidebarMenuButton>
@@ -75,23 +68,22 @@ export function HomeSwitcher({
             <DropdownMenuLabel className="text-xs text-muted-foreground">
               Homes
             </DropdownMenuLabel>
-            {homes.map((home, index) => (
+            {homes.map((home) => (
               <DropdownMenuItem
                 key={home.homeId}
                 className="gap-2 p-2"
                 onClick={() => router.push(`/home/${home.homeId}`)}
               >
                 <div className="flex size-6 items-center justify-center rounded-sm border">
-                  {/* <home.logo className="size-4 shrink-0" /> */}
+                  <HouseIcon />
                 </div>
                 {home.home.name}
-                <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="gap-2 p-2"
-              onClick={() => router.push(`/home/${activeHome.homeId}/settings`)}
+              onClick={() => router.push(`/home/${homeData.id}/settings`)}
             >
               <div className="flex size-6 items-center justify-center rounded-md border bg-background">
                 <Settings className="size-4" />

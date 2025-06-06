@@ -1,23 +1,17 @@
-import { useState } from "react";
-import { createHome } from "../endpoints/createHome";
+import axios from "@/lib/axios";
+import { HOME_ENDPOINTS } from "../endpoints";
 
 export function useCreateHome() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function createNewHome(name: string, address: string) {
-    setIsLoading(true);
-    setError(null);
+  return async (name: string, address: string) => {
     try {
-      const response = await createHome(name, address);
-      return response;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create home");
-      throw err;
-    } finally {
-      setIsLoading(false);
+      const response = await axios.post(HOME_ENDPOINTS.createHome, {
+        name,
+        address,
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Could not create home", error);
+      throw error;
     }
-  }
-
-  return { createNewHome, isLoading, error };
+  };
 }

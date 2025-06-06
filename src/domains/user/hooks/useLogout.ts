@@ -1,26 +1,13 @@
-import axios from "axios";
-import { apiUrl } from "@/config/api";
-import { useRouter } from "next/navigation";
+import axios from "@/lib/axios";
+import { AUTH_ENDPOINTS } from "../endpoints";
 
 export function useLogout() {
-  const router = useRouter();
-
-  const logout = async () => {
+  return async (): Promise<void> => {
     try {
-      await axios.post(
-        apiUrl("/user/logout"),
-        {},
-        {
-          withCredentials: true,
-        },
-      );
-      // Force a full page reload to clear all client-side state
-      window.location.href = "/login";
+      await axios.post(AUTH_ENDPOINTS.logout, {});
     } catch (error) {
       console.error("Logout failed:", error);
-      throw error; // Re-throw the error so the calling component can handle it
+      throw error;
     }
   };
-
-  return { logout };
 }

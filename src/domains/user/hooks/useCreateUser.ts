@@ -1,22 +1,21 @@
-import { useState } from "react";
-import { createUser } from "../endpoints/createUser";
+import axios from "@/lib/axios";
+import { isAxiosError } from "axios";
+import { AUTH_ENDPOINTS } from "../endpoints";
 
 export function useCreateUser() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function createNewUser(name: string, email: string, password: string) {
-    setIsLoading(true);
-    setError(null);
+  return async (
+    name: string,
+    email: string,
+    password: string,
+  ): Promise<void> => {
     try {
-      await createUser(name, email, password);
+      await axios.post(AUTH_ENDPOINTS.register, { name, email, password });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create user");
-      throw err;
-    } finally {
-      setIsLoading(false);
+      if (isAxiosError(err)) {
+        throw new Error(err.response?.data?.error || "Failed to create user");
+      } else {
+        throw new Error("Failed to create user");
+      }
     }
-  }
-
-  return { createNewUser, isLoading, error };
+  };
 }

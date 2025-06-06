@@ -1,80 +1,60 @@
+"use client";
+
 import {
   createContext,
   useContext,
+  ReactNode,
   useState,
   useEffect,
-  ReactNode,
+  useCallback,
 } from "react";
-import { getHomeById } from "../domains/home/endpoints/getHomeById";
 import { HomeModel } from "@/domains/home/home.types";
-import { useParams, usePathname } from "next/navigation";
+import { useGetHomeById } from "@/domains/home/hooks/useGetHomeById";
+import { useParams } from "next/navigation";
 
-export const HomeContext = createContext<{
-  isInHome: boolean;
-  isHomeLocation: boolean;
-  currentHome: HomeModel | null;
-  currentHomeId: string | null;
-  isLoading: boolean;
-  error: Error | null;
-}>({
-  isInHome: false,
-  isHomeLocation: false,
-  currentHome: null,
-  currentHomeId: null,
-  isLoading: false,
-  error: null,
-});
+type HomeContextType = {
+  homeData: HomeModel | null;
+  refreshHomeData: (homeId: string) => Promise<void>;
+};
 
-export function useHomeContext() {
-  const context = useContext(HomeContext);
-  if (context === undefined) {
-    throw new Error("useHome must be used within a HomeProvider");
-  }
-  return context;
-}
+const HomeContext = createContext<HomeContextType | null>(null);
 
 export function HomeProvider({ children }: { children: ReactNode }) {
   const params = useParams();
-  const pathname = usePathname();
-  const [currentHome, setCurrentHome] = useState<HomeModel | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-  const homeId = params?.homeId as string | undefined;
-  const isInHome = !!currentHome;
-  const isHomeLocation = pathname?.startsWith("/home/") ?? false;
+  const getHomeById = useGetHomeById();
+  const homeId = params?.homeId as string;
+  const [homeData, setHomeData] = useState<HomeModel | null>(null);
+
+  const refreshHomeData = useCallback(
+    async (homeId: string) => {
+      try {
+        const data = await getHomeById(homeId);
+        setHomeData(data);
+        console.log("Home context", data);
+      } catch (error) {
+        console.error("Failed to refresh home data:", error);
+      }
+    },
+    [getHomeById],
+  );
 
   useEffect(() => {
-    // This will be to check if the user is allowed to view this home
-    if (isInHome) {
-      console.log("Entered home", {
-        isInHome,
-        name: currentHome.name,
-        homeId,
-        currentHome,
-      });
-    } else {
-      console.log("Left room", { isInHome, homeId, currentHome });
+    if (homeId) {
+      refreshHomeData(homeId);
     }
-  }, [currentHome]);
-
-  //   const updateHome = async (data: Partial<Home>) => {
-  // Implement update logic here
-  // This could call an updateHome endpoint
-  // and then update the local state
-  //   };
+  }, [homeId]);
 
   return (
-    <HomeContext.Provider
-      value={{
-        isInHome,
-        isHomeLocation,
-        currentHome,
-        currentHomeId: homeId || null,
-        isLoading,
-        error,
-      }}
-    >
+    <HomeContext.Provider value={{ homeData, refreshHomeData }}>
       {children}
     </HomeContext.Provider>
   );
+}
+
+export function useHome() {
+  const context = useContext(HomeContext);
+  if (!context) {
+    throw new Error("useHome must be used within a HomeProvider");
+  }
+  return context;
 }

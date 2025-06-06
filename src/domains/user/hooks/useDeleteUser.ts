@@ -1,22 +1,19 @@
-import { useState } from "react";
-import { deleteUser } from "../endpoints/deleteUser";
+import axios from "@/lib/axios";
+import { isAxiosError } from "axios";
+import { USER_ENDPOINTS } from "../endpoints";
 
 export function useDeleteUser() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function deleteUserAccount(password: string) {
-    setIsLoading(true);
-    setError(null);
+  return async (password: string): Promise<void> => {
     try {
-      await deleteUser(password);
+      await axios.delete(USER_ENDPOINTS.me, { data: { password } });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete account");
-      throw err;
-    } finally {
-      setIsLoading(false);
+      if (isAxiosError(err)) {
+        throw new Error(
+          err.response?.data?.error || "Failed to delete account",
+        );
+      } else {
+        throw new Error("Failed to delete account");
+      }
     }
-  }
-
-  return { deleteUserAccount, isLoading, error };
+  };
 }

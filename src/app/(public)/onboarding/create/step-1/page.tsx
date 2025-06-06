@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -29,7 +28,7 @@ type FormData = z.infer<typeof schema>;
 
 export default function OnboardingCreateStep1() {
   const router = useRouter();
-  const { createNewHome, isLoading, error } = useCreateHome();
+  const createHome = useCreateHome();
 
   const {
     register,
@@ -41,10 +40,10 @@ export default function OnboardingCreateStep1() {
 
   async function onSubmit(data: FormData) {
     try {
-      const response = await createNewHome(data.name, data.address);
+      const response = await createHome(data.name, data.address);
       if (response?.home?.id) {
-        // router.push(`/home/${response.home.id}`);
-        router.push(`/onboarding/create/step-2?homeId=${response.home.id}`);
+        sessionStorage.setItem("homeId", response.home.id);
+        router.push("/onboarding/create/step-2");
       }
     } catch (err) {
       console.error("Home creation error:", err);
@@ -62,9 +61,9 @@ export default function OnboardingCreateStep1() {
           </CardHeader>
           <form onSubmit={handleSubmit(onSubmit)}>
             <CardContent className="space-y-4">
-              {error && (
+              {errors.root?.message && (
                 <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
+                  <AlertDescription>{errors.root.message}</AlertDescription>
                 </Alert>
               )}
               <div className="space-y-2">
@@ -95,8 +94,8 @@ export default function OnboardingCreateStep1() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Creating Home..." : "Create Home"}
+              <Button type="submit" className="w-full">
+                Create Home
               </Button>
             </CardFooter>
           </form>

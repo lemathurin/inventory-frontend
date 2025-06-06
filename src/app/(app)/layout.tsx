@@ -1,6 +1,8 @@
-import ClientLogoutButton from "@/components/ClientLogoutButton";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { UserProvider } from "@/contexts/user.context";
+import { HomeProvider } from "@/contexts/home.context";
+import { AppHeader } from "@/components/AppHeader";
 
 export default function RootLayout({
   children,
@@ -8,12 +10,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <ClientLogoutButton />
-        {children}
-      </SidebarInset>
-    </SidebarProvider>
+    <UserProvider>
+      <HomeProvider>
+        <SidebarProvider>
+          <AppSidebar />
+          <SidebarInset>
+            <AppHeader />
+            {children}
+          </SidebarInset>
+        </SidebarProvider>
+      </HomeProvider>
+    </UserProvider>
   );
 }

@@ -15,21 +15,18 @@ import { Label } from "@/components/ui/label";
 import { Toaster, toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
 import { DeleteAccountModal } from "@/components/delete-account-modal";
-import { useGetCurrentUser } from "@/domains/user/hooks/useGetCurrentUser";
-import {
-  useUpdateUserName,
-  useUpdateUserEmail,
-  useUpdateUserPassword,
-} from "@/domains/user/hooks/useUpdateUser";
+import { useUser } from "@/contexts/user.context";
+import { useUpdateUserName } from "@/domains/user/hooks/useUpdateUserName";
+import { useUpdateUserEmail } from "@/domains/user/hooks/useUpdateUserEmail";
+import { useUpdateUserPassword } from "@/domains/user/hooks/useUpdateUserPassword";
 import { useDeleteUser } from "@/domains/user/hooks/useDeleteUser";
 
 export default function AccountSettings() {
-  const { userData } = useGetCurrentUser();
-  const { updateName, isLoading: isUpdatingName } = useUpdateUserName();
-  const { updateEmail, isLoading: isUpdatingEmail } = useUpdateUserEmail();
-  const { updatePassword, isLoading: isUpdatingPassword } =
-    useUpdateUserPassword();
-  const { deleteUserAccount, isLoading: isDeletingAccount } = useDeleteUser();
+  const { userData } = useUser();
+  const updateUserName = useUpdateUserName();
+  const updateUserEmail = useUpdateUserEmail();
+  const updateUserPassword = useUpdateUserPassword();
+  const deleteUser = useDeleteUser();
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [showPasswords, setShowPasswords] = useState(false);
@@ -37,6 +34,10 @@ export default function AccountSettings() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  if (!userData) {
+    return null;
+  }
 
   function togglePasswordVisibility() {
     setShowPasswords(!showPasswords);
@@ -50,9 +51,9 @@ export default function AccountSettings() {
         return;
       }
 
-      await updateName(newName);
+      await updateUserName(newName);
       toast.success(`Your name has been changed to ${newName}`);
-      setNewName(newName);
+      setNewName("");
     } catch (error) {
       console.error("Error changing name:", error);
       toast.error("An error occurred while changing your name");
@@ -67,9 +68,9 @@ export default function AccountSettings() {
         return;
       }
 
-      await updateEmail(newEmail);
+      await updateUserEmail(newEmail);
       toast.success(`Your email has been changed to ${newEmail}`);
-      setNewEmail(newEmail);
+      setNewEmail("");
     } catch (error) {
       console.error("Error changing email:", error);
       toast.error("An error occurred while changing your email");
@@ -89,7 +90,7 @@ export default function AccountSettings() {
         return;
       }
 
-      await updatePassword(currentPassword, newPassword);
+      await updateUserPassword(currentPassword, newPassword);
       toast.success("Password changed successfully");
       setCurrentPassword("");
       setNewPassword("");
@@ -102,17 +103,13 @@ export default function AccountSettings() {
 
   async function handleDeleteAccount(password: string) {
     try {
-      await deleteUserAccount(password);
+      await deleteUser(password);
       toast.success("Account deleted successfully");
       window.location.href = "/login";
     } catch (error) {
       console.error("Error deleting account:", error);
       toast.error("An error occurred while deleting your account");
     }
-  }
-
-  if (!userData) {
-    return null;
   }
 
   return (
@@ -140,11 +137,9 @@ export default function AccountSettings() {
             <Button
               type="submit"
               className="w-full sm:w-auto"
-              disabled={
-                isUpdatingName || newName === userData?.name || !newName.trim()
-              }
+              disabled={newName === userData?.name || !newName.trim()}
             >
-              {isUpdatingName ? "Saving..." : "Save Name"}
+              Save Name
             </Button>
           </form>
         </CardContent>
@@ -171,13 +166,9 @@ export default function AccountSettings() {
             <Button
               type="submit"
               className="w-full sm:w-auto"
-              disabled={
-                isUpdatingEmail ||
-                newEmail === userData?.email ||
-                !newEmail.trim()
-              }
+              disabled={newEmail === userData?.email || !newEmail.trim()}
             >
-              {isUpdatingEmail ? "Saving..." : "Save Email"}
+              Save Email
             </Button>
           </form>
         </CardContent>
@@ -272,14 +263,13 @@ export default function AccountSettings() {
               type="submit"
               className="w-full sm:w-auto"
               disabled={
-                isUpdatingPassword ||
                 !currentPassword ||
                 !newPassword ||
                 !confirmPassword ||
                 newPassword !== confirmPassword
               }
             >
-              {isUpdatingPassword ? "Updating..." : "Change Password"}
+              Change Password"
             </Button>
           </form>
         </CardContent>
