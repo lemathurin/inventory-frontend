@@ -11,7 +11,13 @@ export type ItemModel = {
   createdAt: Date;
   updatedAt: Date;
   homeId?: string;
-  roomId?: string[];
+  rooms?: Array<{
+    id: string;
+    name: string;
+    createdAt: string;
+    updatedAt: string;
+    homeId: string;
+  }>;
   ownerId: string;
   mediaUrls?: string[];
 };
