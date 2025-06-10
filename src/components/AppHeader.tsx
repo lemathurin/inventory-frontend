@@ -10,6 +10,7 @@ import {
   BreadcrumbSeparator,
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
+import React from "react";
 
 interface BreadcrumbItemProps {
   label: string;
@@ -35,8 +36,8 @@ export function AppHeader({ breadcrumbs = [], actionButton }: AppHeaderProps) {
           <Breadcrumb>
             <BreadcrumbList>
               {breadcrumbs.map((breadcrumb, index) => (
-                <>
-                  <BreadcrumbItem key={index}>
+                <React.Fragment key={`breadcrumb-${index}`}>
+                  <BreadcrumbItem key={`item-${index}`}>
                     {breadcrumb.href ? (
                       <BreadcrumbLink href={breadcrumb.href}>
                         {breadcrumb.label}
@@ -45,8 +46,10 @@ export function AppHeader({ breadcrumbs = [], actionButton }: AppHeaderProps) {
                       <BreadcrumbPage>{breadcrumb.label}</BreadcrumbPage>
                     )}
                   </BreadcrumbItem>
-                  {index < breadcrumbs.length - 1 && <BreadcrumbSeparator />}
-                </>
+                  {index < breadcrumbs.length - 1 && (
+                    <BreadcrumbSeparator key={`sep-${index}`} />
+                  )}
+                </React.Fragment>
               ))}
             </BreadcrumbList>
           </Breadcrumb>
