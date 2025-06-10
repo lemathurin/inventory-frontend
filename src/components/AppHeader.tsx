@@ -11,25 +11,48 @@ import {
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
 
-export function AppHeader() {
+interface BreadcrumbItemProps {
+  label: string;
+  href?: string;
+  isCurrent?: boolean;
+}
+
+interface AppHeaderProps {
+  breadcrumbs?: BreadcrumbItemProps[];
+  actionButton?: React.ReactNode;
+}
+
+export function AppHeader({ breadcrumbs = [], actionButton }: AppHeaderProps) {
   return (
     <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
       <SidebarTrigger className="-ml-1" />
-      <Separator
-        orientation="vertical"
-        className="mr-2 data-[orientation=vertical]:h-4"
-      />
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem className="hidden md:block">
-            <BreadcrumbLink href="#">Building Your Application</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator className="hidden md:block" />
-          <BreadcrumbItem>
-            <BreadcrumbPage>Data Fetching</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
+      {breadcrumbs.length > 0 && (
+        <>
+          <Separator
+            orientation="vertical"
+            className="mr-2 data-[orientation=vertical]:h-4"
+          />
+          <Breadcrumb>
+            <BreadcrumbList>
+              {breadcrumbs.map((breadcrumb, index) => (
+                <>
+                  <BreadcrumbItem key={index}>
+                    {breadcrumb.href ? (
+                      <BreadcrumbLink href={breadcrumb.href}>
+                        {breadcrumb.label}
+                      </BreadcrumbLink>
+                    ) : (
+                      <BreadcrumbPage>{breadcrumb.label}</BreadcrumbPage>
+                    )}
+                  </BreadcrumbItem>
+                  {index < breadcrumbs.length - 1 && <BreadcrumbSeparator />}
+                </>
+              ))}
+            </BreadcrumbList>
+          </Breadcrumb>
+        </>
+      )}
+      {actionButton && <div className="ml-auto">{actionButton}</div>}
     </header>
   );
 }
