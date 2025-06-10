@@ -25,6 +25,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useGetRoomsByHomeId } from "@/domains/home/hooks/useGetRoomsByHomeId";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableCell,
+} from "@/components/ui/table";
+import { RoomModel } from "@/domains/room/room.types";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -35,8 +44,10 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function HomeSettings() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [rooms, setRooms] = useState<RoomModel[]>([]);
   const updateHome = useUpdateHome();
   const { homeData } = useHome();
+  const getRoomsByHomeId = useGetRoomsByHomeId();
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -53,8 +64,18 @@ export default function HomeSettings() {
         name: homeData.name,
         address: homeData.address,
       });
+      fetchRooms();
     }
   }, [homeData, form]);
+
+  async function fetchRooms() {
+    try {
+      const data = await getRoomsByHomeId(homeData!.id);
+      setRooms(data);
+    } catch (err) {
+      console.error("Error fetching rooms", err);
+    }
+  }
 
   async function onSubmit(data: FormData) {
     setIsSubmitting(true);
@@ -118,6 +139,33 @@ export default function HomeSettings() {
                 </Button>
               </form>
             </Form>
+          </CardContent>
+        </Card>
+
+        <Card className="mb-4">
+          <CardHeader>
+            <CardTitle>Rooms</CardTitle>
+            <CardDescription>Manage your rooms</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableCell>Room Name</TableCell>
+                  <TableCell>Users</TableCell>
+                  <TableCell>Actions</TableCell>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {rooms.map((room) => (
+                  <TableRow key={room.id}>
+                    <TableCell>{room.name}</TableCell>
+                    <TableCell>{room.users?.length || 0}</TableCell>
+                    <TableCell>{/* Action buttons will go here */}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
       </div>
