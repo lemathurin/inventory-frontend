@@ -6,7 +6,7 @@ import Link from "next/link";
 export default function ItemCard({ item }: { item: ItemModel }) {
   return (
     <Link href={`/home/${item.homeId}/item/${item.id}`}>
-      <Card className="sm:w-[270px] h-[300px] bg-muted p-3 flex flex-col justify-between">
+      <Card className="h-[300px] bg-muted p-3 flex flex-col justify-between">
         <div className="flex gap-2">
           <Badge>{item.rooms?.[0]?.name}</Badge>
           <Badge variant="secondary">€{item.price}</Badge>
