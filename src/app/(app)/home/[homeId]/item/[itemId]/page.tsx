@@ -88,15 +88,13 @@ export default function ItemPage() {
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-8">
-          {item.price && (
-            <Card className="p-4">
-              <div className="flex items-center gap-1">
-                <Euro className="h-4 w-4 text-muted-foreground" />
-                <Label className="text-muted-foreground">Price</Label>
-              </div>
-              <p className="mt-2">€{item.price}</p>
-            </Card>
-          )}
+          <Card className="p-4">
+            <div className="flex items-center gap-1">
+              <Euro className="h-4 w-4 text-muted-foreground" />
+              <Label className="text-muted-foreground">Price</Label>
+            </div>
+            <p className="mt-2">€{item.price}</p>
+          </Card>
           <Card className="p-4">
             <div className="flex items-center gap-1">
               <Calendar className="h-4 w-4 text-muted-foreground" />

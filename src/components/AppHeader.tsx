@@ -25,7 +25,7 @@ interface AppHeaderProps {
 
 export function AppHeader({ breadcrumbs = [], actionButton }: AppHeaderProps) {
   return (
-    <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+    <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 bg-background text-card-foreground">
       <SidebarTrigger className="-ml-1" />
       {breadcrumbs.length > 0 && (
         <>
