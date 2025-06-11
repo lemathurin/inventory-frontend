@@ -41,7 +41,7 @@ import {
 } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react";
 import { useCreateItem } from "@/domains/item/hooks/useCreateItem";
-import { useHome } from "@/contexts/home.context";
+import { useHome } from "@/domains/home/home.context";
 import { ErrorMessage } from "@/components/ErrorMessage";
 
 const formSchema = z.object({

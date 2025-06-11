@@ -1,6 +1,6 @@
 import axios from "@/lib/axios";
 import { USER_ENDPOINTS } from "../endpoints";
-import { useUser } from "@/contexts/user.context";
+import { useUser } from "@/domains/user/user.context";
 
 export function useUpdateUserName() {
   const { refreshUserData } = useUser();
