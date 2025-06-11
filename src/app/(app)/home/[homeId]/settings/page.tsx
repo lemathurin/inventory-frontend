@@ -34,6 +34,15 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { RoomModel } from "@/domains/room/room.types";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { useUpdateRoom } from "@/domains/room/hooks/useUpdateRoom";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -48,12 +57,19 @@ export default function HomeSettings() {
   const updateHome = useUpdateHome();
   const { homeData } = useHome();
   const getRoomsByHomeId = useGetRoomsByHomeId();
+  const updateRoom = useUpdateRoom();
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
       address: "",
+    },
+  });
+
+  const roomForm = useForm({
+    defaultValues: {
+      name: "",
     },
   });
 
@@ -64,18 +80,15 @@ export default function HomeSettings() {
         name: homeData.name,
         address: homeData.address,
       });
-      fetchRooms();
     }
   }, [homeData, form]);
 
-  async function fetchRooms() {
-    try {
-      const data = await getRoomsByHomeId(homeData!.id);
-      setRooms(data);
-    } catch (err) {
-      console.error("Error fetching rooms", err);
+  // Fetch rooms when homeData is available
+  useEffect(() => {
+    if (homeData) {
+      getRoomsByHomeId(homeData.id).then(setRooms);
     }
-  }
+  }, [homeData]);
 
   async function onSubmit(data: FormData) {
     setIsSubmitting(true);
@@ -153,7 +166,7 @@ export default function HomeSettings() {
                 <TableRow>
                   <TableCell>Room Name</TableCell>
                   <TableCell>Users</TableCell>
-                  <TableCell>Actions</TableCell>
+                  <TableCell className="text-center">Actions</TableCell>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -161,7 +174,45 @@ export default function HomeSettings() {
                   <TableRow key={room.id}>
                     <TableCell>{room.name}</TableCell>
                     <TableCell>{room.users?.length || 0}</TableCell>
-                    <TableCell>{/* Action buttons will go here */}</TableCell>
+                    <TableCell>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" className="w-full">
+                            Edit
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Edit Room</DialogTitle>
+                            <DialogDescription>
+                              Update the room details below.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <Form {...roomForm}>
+                            <form
+                              onSubmit={roomForm.handleSubmit((data) => {
+                                updateRoom(room.id, data.name).then(() => {
+                                  getRoomsByHomeId(homeData!.id).then(setRooms);
+                                });
+                              })}
+                              className="space-y-4"
+                            >
+                              <FormItem>
+                                <FormLabel>Room Name</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...roomForm.register("name")}
+                                    defaultValue={room.name}
+                                    placeholder="Enter room name"
+                                  />
+                                </FormControl>
+                              </FormItem>
+                              <Button type="submit">Save Changes</Button>
+                            </form>
+                          </Form>
+                        </DialogContent>
+                      </Dialog>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
