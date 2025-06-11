@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Toaster, toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
 import { DeleteAccountModal } from "@/components/delete-account-modal";
-import { useUser } from "@/contexts/user.context";
+import { useUser } from "@/domains/user/user.context";
 import { useUpdateUserName } from "@/domains/user/hooks/useUpdateUserName";
 import { useUpdateUserEmail } from "@/domains/user/hooks/useUpdateUserEmail";
 import { useUpdateUserPassword } from "@/domains/user/hooks/useUpdateUserPassword";

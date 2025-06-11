@@ -1,6 +1,6 @@
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { UserProvider } from "@/contexts/user.context";
+import { UserProvider } from "@/domains/user/user.context";
 import { HomeProvider } from "@/domains/home/home.context";
 
 export default function RootLayout({
