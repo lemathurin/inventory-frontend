@@ -1,6 +1,6 @@
 "use client";
 
-import { useHome } from "@/contexts/home.context";
+import { useHome } from "@/domains/home/home.context";
 import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";

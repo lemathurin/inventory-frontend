@@ -3,7 +3,7 @@
 import * as React from "react";
 import { ChevronsUpDown, HouseIcon, Plus, Settings } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useHome } from "@/contexts/home.context";
+import { useHome } from "@/domains/home/home.context";
 
 import {
   DropdownMenu,

@@ -1,6 +1,6 @@
 import axios from "@/lib/axios";
 import { HOME_ENDPOINTS } from "../endpoints";
-import { useHome } from "@/contexts/home.context";
+import { useHome } from "@/domains/home/home.context";
 
 export function useUpdateHome() {
   const { refreshHomeData } = useHome();

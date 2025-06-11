@@ -24,7 +24,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
-import { useHome } from "@/contexts/home.context";
+import { useHome } from "@/domains/home/home.context";
 import Link from "next/link";
 
 export function NavMain() {

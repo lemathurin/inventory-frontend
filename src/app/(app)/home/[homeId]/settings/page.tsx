@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Toaster, toast } from "sonner";
 import { AppHeader } from "@/components/AppHeader";
 import { useUpdateHome } from "@/domains/home/hooks/useUpdateHome";
-import { useHome } from "@/contexts/home.context";
+import { useHome } from "@/domains/home/home.context";
 import {
   Form,
   FormControl,
