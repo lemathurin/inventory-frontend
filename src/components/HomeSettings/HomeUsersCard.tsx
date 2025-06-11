@@ -62,9 +62,12 @@ export default function HomeUsersCard({
   return (
     <>
       <Card className="mb-4">
-        <CardHeader>
-          <CardTitle>Users</CardTitle>
-          <CardDescription>Manage your home users</CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div className="flex flex-col gap-2">
+            <CardTitle>Users</CardTitle>
+            <CardDescription>Manage your home users</CardDescription>
+          </div>
+          <Button variant="secondary">Invite more people</Button>
         </CardHeader>
         <CardContent>
           <Table>
