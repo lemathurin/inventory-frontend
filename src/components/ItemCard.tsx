@@ -11,7 +11,7 @@ export default function ItemCard({ item }: { item: ItemModel }) {
           <Badge>{item.rooms?.[0]?.name}</Badge>
           <Badge variant="secondary">€{item.price}</Badge>
         </div>
-        <div className="inline-flex bg-sidebar px-1 rounded text-primary text-lg text-semidbold">
+        <div className="w-fit inline-flex bg-background px-2 py-1 rounded text-primary text-lg text-semidbold">
           {item.name}
         </div>
       </Card>
