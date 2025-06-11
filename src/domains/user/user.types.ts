@@ -4,6 +4,7 @@ export interface UserModel {
   email: string;
   createdAt: Date;
   updatedAt: Date;
+  admin?: boolean;
   homes?: Array<{
     homeId: string;
     admin: boolean;

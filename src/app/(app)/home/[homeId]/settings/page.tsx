@@ -43,6 +43,10 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useUpdateRoom } from "@/domains/room/hooks/useUpdateRoom";
+import HomeRoomsCard from "@/components/HomeSettings/HomeRoomsCard";
+import { useGetHomeUsers } from "@/domains/home/hooks/useGetHomeUsers";
+import HomeUsersCard from "@/components/HomeSettings/HomeUsersCard";
+import { UserModel } from "@/domains/user/user.types";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -54,9 +58,11 @@ type FormData = z.infer<typeof formSchema>;
 export default function HomeSettings() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [rooms, setRooms] = useState<RoomModel[]>([]);
+  const [users, setUsers] = useState<UserModel[]>([]);
   const updateHome = useUpdateHome();
   const { homeData } = useHome();
   const getRoomsByHomeId = useGetRoomsByHomeId();
+  const getHomeUsers = useGetHomeUsers();
   const updateRoom = useUpdateRoom();
 
   const form = useForm<FormData>({
@@ -80,15 +86,32 @@ export default function HomeSettings() {
         name: homeData.name,
         address: homeData.address,
       });
+      fetchRooms();
+      fetchUsers();
     }
   }, [homeData, form]);
 
-  // Fetch rooms when homeData is available
-  useEffect(() => {
-    if (homeData) {
-      getRoomsByHomeId(homeData.id).then(setRooms);
+  async function fetchRooms() {
+    if (!homeData) return;
+    try {
+      const fetchedRooms = await getRoomsByHomeId(homeData.id);
+      setRooms(fetchedRooms);
+      console.log("fetched rooms", fetchedRooms);
+    } catch (error) {
+      console.error("Failed to fetch rooms:", error);
     }
-  }, [homeData]);
+  }
+
+  async function fetchUsers() {
+    if (!homeData) return;
+    try {
+      const fetchedUsers = await getHomeUsers(homeData.id);
+      setUsers(fetchedUsers);
+      console.log("fetched users", fetchedUsers);
+    } catch (error) {
+      console.error("Failed to fetch users:", error);
+    }
+  }
 
   async function onSubmit(data: FormData) {
     setIsSubmitting(true);
@@ -101,6 +124,10 @@ export default function HomeSettings() {
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  if (!homeData) {
+    return <div>Loading...</div>;
   }
 
   return (
@@ -155,70 +182,17 @@ export default function HomeSettings() {
           </CardContent>
         </Card>
 
-        <Card className="mb-4">
-          <CardHeader>
-            <CardTitle>Rooms</CardTitle>
-            <CardDescription>Manage your rooms</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableCell>Room Name</TableCell>
-                  <TableCell>Users</TableCell>
-                  <TableCell className="text-center">Actions</TableCell>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rooms.map((room) => (
-                  <TableRow key={room.id}>
-                    <TableCell>{room.name}</TableCell>
-                    <TableCell>{room.users?.length || 0}</TableCell>
-                    <TableCell>
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button variant="outline" className="w-full">
-                            Edit
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Edit Room</DialogTitle>
-                            <DialogDescription>
-                              Update the room details below.
-                            </DialogDescription>
-                          </DialogHeader>
-                          <Form {...roomForm}>
-                            <form
-                              onSubmit={roomForm.handleSubmit((data) => {
-                                updateRoom(room.id, data.name).then(() => {
-                                  getRoomsByHomeId(homeData!.id).then(setRooms);
-                                });
-                              })}
-                              className="space-y-4"
-                            >
-                              <FormItem>
-                                <FormLabel>Room Name</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...roomForm.register("name")}
-                                    defaultValue={room.name}
-                                    placeholder="Enter room name"
-                                  />
-                                </FormControl>
-                              </FormItem>
-                              <Button type="submit">Save Changes</Button>
-                            </form>
-                          </Form>
-                        </DialogContent>
-                      </Dialog>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+        <HomeRoomsCard
+          homeId={homeData.id}
+          rooms={rooms}
+          onRoomsUpdated={setRooms}
+        />
+
+        <HomeUsersCard
+          homeId={homeData.id}
+          users={users}
+          onUsersUpdated={setUsers}
+        />
       </div>
     </>
   );
