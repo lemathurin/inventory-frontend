@@ -1,10 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { MoreHorizontal } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
 import {
   Card,
   CardContent,
@@ -45,7 +49,7 @@ export default function HomeUsersCard({
               <TableCell>Name</TableCell>
               <TableCell>Email</TableCell>
               <TableCell>Role</TableCell>
-              <TableCell className="text-center">Actions</TableCell>
+              {/* <TableCell></TableCell> */}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -57,7 +61,27 @@ export default function HomeUsersCard({
                   <TableCell>{user.name}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{isAdmin ? "Admin" : "User"}</TableCell>
-                  <TableCell></TableCell>
+                  <TableCell className="text-center">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() => console.log("Toggle admin status")}
+                        >
+                          {isAdmin ? "Make into User" : "Make into Admin"}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => console.log("Remove from home")}
+                        >
+                          Remove from home
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
                 </TableRow>
               );
             })}
