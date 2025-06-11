@@ -68,9 +68,12 @@ export default function HomeRoomsCard({
 
   return (
     <Card className="mb-4">
-      <CardHeader>
-        <CardTitle>Rooms</CardTitle>
-        <CardDescription>Manage your rooms</CardDescription>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div className="flex flex-col gap-2">
+          <CardTitle>Rooms</CardTitle>
+          <CardDescription>Manage your rooms</CardDescription>
+        </div>
+        <Button variant="secondary">Create a room</Button>
       </CardHeader>
       <CardContent>
         <Table>
