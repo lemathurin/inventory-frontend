@@ -57,13 +57,11 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function HomeSettings() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [rooms, setRooms] = useState<RoomModel[]>([]);
   const [users, setUsers] = useState<UserModel[]>([]);
   const updateHome = useUpdateHome();
   const { homeData } = useHome();
   const getRoomsByHomeId = useGetRoomsByHomeId();
   const getHomeUsers = useGetHomeUsers();
-  const updateRoom = useUpdateRoom();
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -86,21 +84,9 @@ export default function HomeSettings() {
         name: homeData.name,
         address: homeData.address,
       });
-      fetchRooms();
       fetchUsers();
     }
   }, [homeData, form]);
-
-  async function fetchRooms() {
-    if (!homeData) return;
-    try {
-      const fetchedRooms = await getRoomsByHomeId(homeData.id);
-      setRooms(fetchedRooms);
-      console.log("fetched rooms", fetchedRooms);
-    } catch (error) {
-      console.error("Failed to fetch rooms:", error);
-    }
-  }
 
   async function fetchUsers() {
     if (!homeData) return;
@@ -182,11 +168,7 @@ export default function HomeSettings() {
           </CardContent>
         </Card>
 
-        <HomeRoomsCard
-          homeId={homeData.id}
-          rooms={rooms}
-          onRoomsUpdated={setRooms}
-        />
+        <HomeRoomsCard homeId={homeData.id} />
 
         <HomeUsersCard
           homeId={homeData.id}

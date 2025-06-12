@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,41 +30,67 @@ import {
 } from "@/components/ui/dialog";
 import { useUpdateRoom } from "@/domains/room/hooks/useUpdateRoom";
 import { useGetRoomsByHomeId } from "@/domains/home/hooks/useGetRoomsByHomeId";
+import { Label } from "../ui/label";
+import { useGetHomeUsers } from "@/domains/home/hooks/useGetHomeUsers";
+import { useAddUserToRoom } from "@/domains/room/hooks/useAddUserToRoom";
 
-interface HomeRoomsCardProps {
-  homeId: string;
-  rooms: RoomModel[];
-  onRoomsUpdated: (rooms: RoomModel[]) => void;
-}
-
-export default function HomeRoomsCard({
-  homeId,
-  rooms,
-  onRoomsUpdated,
-}: HomeRoomsCardProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const updateRoom = useUpdateRoom();
+export default function HomeRoomsCard({ homeId }: { homeId: string }) {
   const getRoomsByHomeId = useGetRoomsByHomeId();
+  const getHomeUsers = useGetHomeUsers();
+  const addUserToRoom = useAddUserToRoom();
+  const updateRoom = useUpdateRoom();
+  const [rooms, setRooms] = useState<RoomModel[]>([]);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [currentRoom, setCurrentRoom] = useState<RoomModel | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const roomForm = useForm({
     defaultValues: {
       name: "",
     },
   });
 
-  async function handleRoomUpdate(roomId: string, name: string) {
+  useEffect(() => {
+    fetchRooms();
+  }, [homeId]);
+
+  async function fetchRooms() {
+    try {
+      const fetchedRooms = await getRoomsByHomeId(homeId);
+      setRooms(fetchedRooms);
+    } catch (error) {
+      console.error("Failed to fetch rooms:", error);
+    }
+  }
+
+  async function handleRoomUpdate(data: { name: string }) {
+    if (!currentRoom) return;
+
     setIsSubmitting(true);
     try {
-      await updateRoom(roomId, name);
+      await updateRoom(currentRoom.id, data.name);
       toast.success("Room updated successfully");
-      const updatedRooms = await getRoomsByHomeId(homeId);
-      onRoomsUpdated(updatedRooms);
+      await fetchRooms(); // Refresh the list
+      closeEditDialog();
     } catch (error) {
       console.error("Error updating room:", error);
-      toast.error("An error occurred while updating the room");
+      toast.error("Failed to update room");
     } finally {
       setIsSubmitting(false);
     }
   }
+
+  const openEditDialog = (room: RoomModel) => {
+    setCurrentRoom(room);
+    roomForm.reset({ name: room.name });
+    setIsDialogOpen(true);
+  };
+
+  const closeEditDialog = () => {
+    setIsDialogOpen(false);
+    setCurrentRoom(null);
+    roomForm.reset();
+  };
 
   return (
     <Card className="mb-4">
@@ -90,45 +116,56 @@ export default function HomeRoomsCard({
                 <TableCell>{room.name}</TableCell>
                 <TableCell>{room.users?.length || 0}</TableCell>
                 <TableCell>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" className="w-full">
-                        Edit
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Edit Room</DialogTitle>
-                        <DialogDescription>
-                          Update the room details below.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <form
-                        onSubmit={roomForm.handleSubmit((data) => {
-                          handleRoomUpdate(room.id, data.name);
-                        })}
-                        className="space-y-4"
-                      >
-                        <div>
-                          <label>Room Name</label>
-                          <Input
-                            {...roomForm.register("name")}
-                            defaultValue={room.name}
-                            placeholder="Enter room name"
-                          />
-                        </div>
-                        <Button type="submit" disabled={isSubmitting}>
-                          {isSubmitting ? "Saving..." : "Save Changes"}
-                        </Button>
-                      </form>
-                    </DialogContent>
-                  </Dialog>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => openEditDialog(room)}
+                  >
+                    Edit
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </CardContent>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Room</DialogTitle>
+            <DialogDescription>
+              Update the room details below.
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={roomForm.handleSubmit(handleRoomUpdate)}
+            className="space-y-4"
+          >
+            <div className="grid gap-3">
+              <Label htmlFor="room-name">Room Name</Label>
+              <Input
+                id="room-name"
+                {...roomForm.register("name")}
+                placeholder="Enter room name"
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={closeEditDialog}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Saving..." : "Save Changes"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
