@@ -19,5 +19,10 @@ export type ItemModel = {
     homeId: string;
   }>;
   ownerId: string;
+  owner?: {
+    email: string;
+    id: string;
+    name: string;
+  };
   mediaUrls?: string[];
 };
