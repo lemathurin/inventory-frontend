@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 
 export default function ItemPage() {
-  const { itemId } = useParams();
+  const { homeId, itemId } = useParams<{ homeId: string; itemId: string }>();
   const getItemById = useGetItemById();
   const [item, setItem] = useState<ItemModel | null>(null);
   const [loading, setLoading] = useState(true);
@@ -63,7 +63,7 @@ export default function ItemPage() {
         breadcrumbs={[
           {
             label: item.rooms?.[0]?.name || "No room",
-            href: `/home/${item.rooms?.[0]?.id}`,
+            href: `/home/${homeId}/room/${item.rooms?.[0]?.id}`,
           },
           { label: item.name, isCurrent: true },
         ]}

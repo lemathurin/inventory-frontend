@@ -57,7 +57,7 @@ export function NavMain() {
                     {homeData?.rooms?.map((room) => (
                       <SidebarMenuSubItem key={room.id}>
                         <SidebarMenuSubButton asChild>
-                          <Link href={`#${room.id}`}>
+                          <Link href={`/home/${homeData?.id}/room/${room.id}`}>
                             <span>{room.name}</span>
                           </Link>
                         </SidebarMenuSubButton>
