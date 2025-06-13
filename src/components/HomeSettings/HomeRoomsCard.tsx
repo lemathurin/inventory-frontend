@@ -221,13 +221,6 @@ export default function HomeRoomsCard({ homeId }: { homeId: string }) {
               <Label htmlFor="users">Add Users</Label>
               <div className="max-h-60 overflow-y-auto">
                 <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableCell>Name</TableCell>
-                      <TableCell>Email</TableCell>
-                      <TableCell className="text-right">Action</TableCell>
-                    </TableRow>
-                  </TableHeader>
                   <TableBody>
                     {users.map((user) => (
                       <TableRow key={user.userId}>
