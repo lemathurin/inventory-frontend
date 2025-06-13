@@ -114,6 +114,7 @@ export default function HomeRoomsCard({ homeId }: { homeId: string }) {
     setCurrentRoom(null);
     roomForm.reset();
     setRoomUsers([]);
+    fetchRooms();
   };
 
   async function handleAddUserToRoom(userId: string) {
