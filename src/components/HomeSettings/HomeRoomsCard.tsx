@@ -130,11 +130,22 @@ export default function HomeRoomsCard({ homeId }: { homeId: string }) {
 
   async function handleRemoveUserFromRoom(userId: string) {
     if (!currentRoom) return;
+
     try {
+      const roomDetails = await getRoomById(currentRoom.id);
+      const userToRemove = roomDetails.users?.find(
+        (user) => user.userId === userId,
+      );
+
+      if (userToRemove?.admin) {
+        toast.error("Cannot remove a room admin.");
+        return;
+      }
+
       await removeUserFromRoom(currentRoom.id, userId);
       toast.success("User removed from room successfully");
-      const roomDetails = await getRoomById(currentRoom.id);
-      setRoomUsers(roomDetails.users?.map((user) => user.userId) || []);
+      const updatedRoomDetails = await getRoomById(currentRoom.id);
+      setRoomUsers(updatedRoomDetails.users?.map((user) => user.userId) || []);
     } catch (error) {
       console.error("Failed to remove user from room:", error);
     }
@@ -234,6 +245,9 @@ export default function HomeRoomsCard({ homeId }: { homeId: string }) {
                               roomUsers.includes(user.userId)
                                 ? handleRemoveUserFromRoom(user.userId)
                                 : handleAddUserToRoom(user.userId)
+                            }
+                            disabled={
+                              roomUsers.includes(user.userId) && user.admin
                             }
                           >
                             {roomUsers.includes(user.userId) ? "Remove" : "Add"}
