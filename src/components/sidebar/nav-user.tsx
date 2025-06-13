@@ -32,7 +32,7 @@ export function NavUser({
   user: {
     name: string;
     email: string;
-    id: string;
+    userId: string;
   };
 }) {
   const router = useRouter();

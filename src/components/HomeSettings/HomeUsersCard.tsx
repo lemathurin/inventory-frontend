@@ -84,7 +84,7 @@ export default function HomeUsersCard({
                 const isAdmin = user.admin || false;
 
                 return (
-                  <TableRow key={user.id || index}>
+                  <TableRow key={user.userId || index}>
                     <TableCell>{user.name}</TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>{isAdmin ? "Admin" : "User"}</TableCell>
