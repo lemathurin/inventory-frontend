@@ -22,7 +22,6 @@ import {
 import { RoomModel } from "@/domains/room/room.types";
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -33,16 +32,21 @@ import { useGetRoomsByHomeId } from "@/domains/home/hooks/useGetRoomsByHomeId";
 import { Label } from "../ui/label";
 import { useGetHomeUsers } from "@/domains/home/hooks/useGetHomeUsers";
 import { useAddUserToRoom } from "@/domains/room/hooks/useAddUserToRoom";
+import { useGetRoomById } from "@/domains/room/hooks/useGetRoomById";
+import { UserModel } from "@/domains/user/user.types";
 
 export default function HomeRoomsCard({ homeId }: { homeId: string }) {
   const getRoomsByHomeId = useGetRoomsByHomeId();
   const getHomeUsers = useGetHomeUsers();
   const addUserToRoom = useAddUserToRoom();
   const updateRoom = useUpdateRoom();
+  const getRoomById = useGetRoomById();
   const [rooms, setRooms] = useState<RoomModel[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [currentRoom, setCurrentRoom] = useState<RoomModel | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [users, setUsers] = useState<UserModel[]>([]);
+  const [roomUsers, setRoomUsers] = useState<string[]>([]);
 
   const roomForm = useForm({
     defaultValues: {
@@ -52,6 +56,7 @@ export default function HomeRoomsCard({ homeId }: { homeId: string }) {
 
   useEffect(() => {
     fetchRooms();
+    fetchUsers();
   }, [homeId]);
 
   async function fetchRooms() {
@@ -60,6 +65,16 @@ export default function HomeRoomsCard({ homeId }: { homeId: string }) {
       setRooms(fetchedRooms);
     } catch (error) {
       console.error("Failed to fetch rooms:", error);
+    }
+  }
+
+  async function fetchUsers() {
+    try {
+      const fetchedUsers = await getHomeUsers(homeId);
+      setUsers(fetchedUsers);
+      console.log("Fetched users:", fetchedUsers);
+    } catch (error) {
+      console.error("Failed to fetch users:", error);
     }
   }
 
@@ -80,17 +95,36 @@ export default function HomeRoomsCard({ homeId }: { homeId: string }) {
     }
   }
 
-  const openEditDialog = (room: RoomModel) => {
+  async function openEditDialog(room: RoomModel) {
     setCurrentRoom(room);
     roomForm.reset({ name: room.name });
     setIsDialogOpen(true);
-  };
+
+    try {
+      const roomDetails = await getRoomById(room.id);
+      setRoomUsers(roomDetails.users?.map((user) => user.userId) || []);
+    } catch (error) {
+      console.error("Failed to fetch room details:", error);
+    }
+  }
 
   const closeEditDialog = () => {
     setIsDialogOpen(false);
     setCurrentRoom(null);
     roomForm.reset();
+    setRoomUsers([]);
   };
+
+  async function handleAddUserToRoom(userId: string) {
+    if (!currentRoom) return;
+    try {
+      await addUserToRoom(currentRoom.id, userId);
+      toast.success("User added to room successfully");
+      await fetchRooms(); // Refresh the list to show the updated user count
+    } catch (error) {
+      console.error("Failed to add user to room:", error);
+    }
+  }
 
   return (
     <Card className="mb-4">
@@ -149,6 +183,42 @@ export default function HomeRoomsCard({ homeId }: { homeId: string }) {
                 {...roomForm.register("name")}
                 placeholder="Enter room name"
               />
+            </div>
+            <div className="grid gap-3">
+              <Label htmlFor="users">Add Users</Label>
+              <div className="max-h-60 overflow-y-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableCell>Name</TableCell>
+                      <TableCell>Email</TableCell>
+                      <TableCell className="text-right">Action</TableCell>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {users.map((user) => (
+                      <TableRow key={user.userId}>
+                        <TableCell>{user.name}</TableCell>
+                        <TableCell>{user.email || "N/A"}</TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant={
+                              roomUsers.includes(user.userId)
+                                ? "destructive"
+                                : "outline"
+                            }
+                            size="sm"
+                            onClick={() => handleAddUserToRoom(user.userId)}
+                            disabled={roomUsers.includes(user.userId)}
+                          >
+                            {roomUsers.includes(user.userId) ? "Added" : "Add"}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
             <div className="flex gap-2 justify-end">
               <Button
