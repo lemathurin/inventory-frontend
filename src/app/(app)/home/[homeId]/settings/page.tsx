@@ -93,7 +93,6 @@ export default function HomeSettings() {
     try {
       const fetchedUsers = await getHomeUsers(homeData.id);
       setUsers(fetchedUsers);
-      console.log("fetched users", fetchedUsers);
     } catch (error) {
       console.error("Failed to fetch users:", error);
     }

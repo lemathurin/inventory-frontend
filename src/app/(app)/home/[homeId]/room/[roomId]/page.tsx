@@ -27,6 +27,7 @@ export default function RoomPage() {
     try {
       const room = await getRoomById(roomId);
       setRoomData(room);
+      console.log("Room data", room);
     } catch (err) {
       console.log(err);
     }
