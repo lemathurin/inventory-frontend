@@ -90,7 +90,6 @@ export default function HomeUsersCard({ homeId }: { homeId: string }) {
     try {
       const data = await getHomeInvite(homeId);
       setInviteData(data);
-      console.log("Invite data", data);
     } catch (error) {
       console.error("Failed to fetch invite:", error);
     }
