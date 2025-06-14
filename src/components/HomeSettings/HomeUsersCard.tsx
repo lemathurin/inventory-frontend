@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MoreHorizontal } from "lucide-react";
 import {
   DropdownMenu,
@@ -34,30 +34,85 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { useRemoveUserFromHome } from "@/domains/home/hooks/useRemoveUserFromHome";
+import { useGetHomeUsers } from "@/domains/home/hooks/useGetHomeUsers";
+import { useGetHomeInvite } from "@/domains/home/hooks/useGetHomeInvite";
+import { useCreateHomeInvite } from "@/domains/home/hooks/useCreateHomeInvite";
+import { useDeleteHomeInvite } from "@/domains/home/hooks/useDeleteHomeInvite";
+import { InviteModel } from "@/domains/home/home.types";
 
-interface HomeUsersCardProps {
-  homeId: string;
-  users: UserModel[];
-  onUsersUpdated: (users: UserModel[]) => void;
-}
-
-export default function HomeUsersCard({
-  homeId,
-  users,
-  onUsersUpdated,
-}: HomeUsersCardProps) {
+export default function HomeUsersCard({ homeId }: { homeId: string }) {
+  const getHomeUsers = useGetHomeUsers();
   const removeUserFromHome = useRemoveUserFromHome();
+  const getHomeInvite = useGetHomeInvite();
+  const createHomeInvite = useCreateHomeInvite();
+  const deleteHomeInvite = useDeleteHomeInvite();
+  const [users, setUsers] = useState<UserModel[]>([]);
   const [dialogUser, setDialogUser] = useState<UserModel | null>(null);
+  const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
+  const [inviteData, setInviteData] = useState<InviteModel[] | null>(null);
+  const [expiryHours, setExpiryHours] = useState<number>();
+
+  useEffect(() => {
+    fetchUsers();
+    fetchInvite();
+  }, [homeId]);
+
+  async function fetchUsers() {
+    try {
+      const fetchedUsers = await getHomeUsers(homeId);
+      setUsers(fetchedUsers);
+    } catch (error) {
+      console.error("Failed to fetch users:", error);
+    }
+  }
 
   const handleRemoveUser = async (userId: string) => {
     try {
       await removeUserFromHome(homeId, userId);
       setDialogUser(null);
+      fetchUsers();
     } catch (error) {
       console.error("Failed to remove user from home", error);
     }
   };
+
+  async function fetchInvite() {
+    try {
+      const data = await getHomeInvite(homeId);
+      setInviteData(data);
+      console.log("Invite data", data);
+    } catch (error) {
+      console.error("Failed to fetch invite:", error);
+    }
+  }
+
+  async function handleCreateInvite() {
+    try {
+      const data = await createHomeInvite(homeId, expiryHours);
+      setInviteData(data);
+    } catch (error) {
+      console.error("Failed to create invite:", error);
+    }
+  }
+
+  async function handleDeleteInvite() {
+    try {
+      if (inviteData && inviteData[0]) {
+        await deleteHomeInvite(homeId, inviteData[0].id);
+        setInviteData(null);
+      }
+    } catch (error) {
+      console.error("Failed to delete invite:", error);
+    }
+  }
 
   return (
     <>
@@ -67,7 +122,12 @@ export default function HomeUsersCard({
             <CardTitle>Users</CardTitle>
             <CardDescription>Manage your home users</CardDescription>
           </div>
-          <Button variant="secondary">Invite more people</Button>
+          <Button
+            variant="secondary"
+            onClick={() => setIsInviteDialogOpen(true)}
+          >
+            Invite more people
+          </Button>
         </CardHeader>
         <CardContent>
           <Table>
@@ -119,7 +179,6 @@ export default function HomeUsersCard({
         </CardContent>
       </Card>
 
-      {/* AlertDialog rendered once outside the table */}
       <AlertDialog
         open={!!dialogUser}
         onOpenChange={(open) => !open && setDialogUser(null)}
@@ -137,13 +196,77 @@ export default function HomeUsersCard({
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => dialogUser && handleRemoveUser(dialogUser.id)}
+              onClick={() => dialogUser && handleRemoveUser(dialogUser.userId)}
             >
               Remove
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog
+        open={isInviteDialogOpen}
+        onOpenChange={() => setIsInviteDialogOpen(false)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Home invite code</DialogTitle>
+            <DialogDescription>
+              Create an invite code for your home. This can be used to invite
+              other users to join your home.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4">
+            {inviteData && inviteData[0] ? (
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">Invite Code:</span>
+                  <span
+                    className={
+                      inviteData[0].expiresAt &&
+                      new Date(inviteData[0].expiresAt) < new Date()
+                        ? "text-gray-500"
+                        : ""
+                    }
+                  >
+                    {inviteData[0].code}
+                  </span>
+                </div>
+                {inviteData[0].expiresAt && (
+                  <div className="text-sm text-gray-500">
+                    Expires:{" "}
+                    {new Date(inviteData[0].expiresAt).toLocaleString()}
+                  </div>
+                )}
+                {inviteData[0].expiresAt &&
+                  new Date(inviteData[0].expiresAt) < new Date() && (
+                    <Button variant="destructive" onClick={handleDeleteInvite}>
+                      Delete Expired Code
+                    </Button>
+                  )}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">No active invite code</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    placeholder="Expires in (hours)"
+                    className="border rounded p-2 w-24"
+                    min="1"
+                    onChange={(e) => setExpiryHours(Number(e.target.value))}
+                  />
+                  <Button onClick={handleCreateInvite}>
+                    Create Invite Code
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
