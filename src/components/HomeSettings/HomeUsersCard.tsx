@@ -254,6 +254,9 @@ export default function HomeUsersCard({ homeId }: { homeId: string }) {
                       type="number"
                       min="0"
                       placeholder="Expires in (hours)"
+                      onChange={(e) => {
+                        setExpiryHours(Number(e.target.value));
+                      }}
                     />
                     <Button onClick={handleCreateInvite}>Create</Button>
                   </div>
