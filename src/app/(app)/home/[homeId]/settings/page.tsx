@@ -25,28 +25,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useGetRoomsByHomeId } from "@/domains/home/hooks/useGetRoomsByHomeId";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableCell,
-} from "@/components/ui/table";
-import { RoomModel } from "@/domains/room/room.types";
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { useUpdateRoom } from "@/domains/room/hooks/useUpdateRoom";
 import HomeRoomsCard from "@/components/HomeSettings/HomeRoomsCard";
-import { useGetHomeUsers } from "@/domains/home/hooks/useGetHomeUsers";
 import HomeUsersCard from "@/components/HomeSettings/HomeUsersCard";
-import { UserModel } from "@/domains/user/user.types";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -59,7 +39,6 @@ export default function HomeSettings() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const updateHome = useUpdateHome();
   const { homeData } = useHome();
-  const getRoomsByHomeId = useGetRoomsByHomeId();
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
