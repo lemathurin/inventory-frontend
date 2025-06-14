@@ -9,13 +9,6 @@ import { useGetRoomById } from "@/domains/room/hooks/useGetRoomById";
 import { RoomModel } from "@/domains/room/room.types";
 import { useGetRoomUsers } from "@/domains/room/hooks/useGetRoomUsers";
 import ItemCard from "@/components/ItemCard";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { getInitials } from "@/lib/utils";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useHome } from "@/domains/home/home.context";
