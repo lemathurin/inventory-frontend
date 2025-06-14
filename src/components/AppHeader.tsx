@@ -75,7 +75,7 @@ export function AppHeader({
       )}
       <div className="flex-1" />
       {roomUsers && (
-        <div className="flex ml-[9px]">
+        <div className="flex ml-[9px] mr-2">
           {roomUsers.map((user) => (
             <Tooltip key={user.id}>
               <TooltipTrigger asChild>
@@ -95,11 +95,7 @@ export function AppHeader({
           ))}
         </div>
       )}
-      {actionButton && (
-        <div className="ml-2" tabIndex={0}>
-          {actionButton}
-        </div>
-      )}
+      {actionButton && <>{actionButton}</>}
     </header>
   );
 }

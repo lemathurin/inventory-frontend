@@ -41,9 +41,9 @@ export default function HomePage() {
       <AppHeader
         breadcrumbs={[{ label: "Dashboard", isCurrent: true }]}
         actionButton={
-          <Link href={`/home/${homeData.id}/create-item`}>
-            <Button variant="outline">Create item</Button>
-          </Link>
+          <Button variant="outline" asChild>
+            <Link href={`/home/${homeData.id}/create-item`}>Create item</Link>
+          </Button>
         }
       />
       <div className="p-4 text-primary flex flex-col gap-8">
