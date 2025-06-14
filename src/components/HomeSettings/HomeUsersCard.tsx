@@ -117,6 +117,10 @@ export default function HomeUsersCard({ homeId }: { homeId: string }) {
     }
   }
 
+  function isExpired(invite: InviteModel): boolean {
+    return invite.expiresAt ? new Date(invite.expiresAt) < new Date() : false;
+  }
+
   return (
     <>
       <Card className="mb-4">
@@ -225,23 +229,43 @@ export default function HomeUsersCard({ homeId }: { homeId: string }) {
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
-                      <div className="text-lg font-semibold">
+                      <div
+                        className={`text-lg font-semibold ${isExpired(inviteData[0]) ? "text-muted-foreground" : ""}`}
+                      >
                         {inviteData[0].code}
+                        {isExpired(inviteData[0]) && (
+                          <span className="ml-2 text-sm text-destructive">
+                            (Expired)
+                          </span>
+                        )}
                       </div>
                       {inviteData[0].expiresAt && (
-                        <div className="text-sm text-muted-foreground">
+                        <div
+                          className={`text-sm ${isExpired(inviteData[0]) ? "text-destructive" : "text-muted-foreground"}`}
+                        >
                           Expires:{" "}
                           {new Date(inviteData[0].expiresAt).toLocaleString()}
                         </div>
                       )}
                     </div>
-                    <Button
-                      size="icon"
-                      variant="destructive"
-                      onClick={handleDeleteInvite}
-                    >
-                      <CircleX />
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        onClick={() =>
+                          navigator.clipboard.writeText(inviteData[0].code)
+                        }
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="destructive"
+                        onClick={handleDeleteInvite}
+                      >
+                        <CircleX className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
