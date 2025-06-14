@@ -34,7 +34,7 @@ export function HomeSwitcher({
 }) {
   const router = useRouter();
   const { isMobile } = useSidebar();
-  const { homeData } = useHome();
+  const { homeData, isAdmin } = useHome();
 
   if (!homeData) {
     return null;
@@ -81,17 +81,19 @@ export function HomeSwitcher({
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="gap-2 p-2"
-              onClick={() => router.push(`/home/${homeData.id}/settings`)}
-            >
-              <div className="flex size-6 items-center justify-center rounded-md border bg-background">
-                <Settings className="size-4" />
-              </div>
-              <div className="font-medium text-muted-foreground">
-                Manage this home
-              </div>
-            </DropdownMenuItem>
+            {isAdmin && (
+              <DropdownMenuItem
+                className="gap-2 p-2"
+                onClick={() => router.push(`/home/${homeData.id}/settings`)}
+              >
+                <div className="flex size-6 items-center justify-center rounded-md border bg-background">
+                  <Settings className="size-4" />
+                </div>
+                <div className="font-medium text-muted-foreground">
+                  Manage this home
+                </div>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem className="gap-2 p-2">
               <div className="flex size-6 items-center justify-center rounded-md border bg-background">
                 <Plus className="size-4" />

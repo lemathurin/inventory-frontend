@@ -7,4 +7,5 @@ export const HOME_ENDPOINTS = {
   acceptInvite: "/homes/invites/accept",
   getHomeUsers: "/homes/:homeId/users",
   removeHomeUser: "/homes/:homeId/users/:userId",
+  permissions: "/homes/:homeId/permissions",
 } as const;
