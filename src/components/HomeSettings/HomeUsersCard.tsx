@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MoreHorizontal } from "lucide-react";
+import { CircleX, Copy, Delete, MoreHorizontal } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -47,6 +47,8 @@ import { useGetHomeInvite } from "@/domains/home/hooks/useGetHomeInvite";
 import { useCreateHomeInvite } from "@/domains/home/hooks/useCreateHomeInvite";
 import { useDeleteHomeInvite } from "@/domains/home/hooks/useDeleteHomeInvite";
 import { InviteModel } from "@/domains/home/home.types";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
 
 export default function HomeUsersCard({ homeId }: { homeId: string }) {
   const getHomeUsers = useGetHomeUsers();
@@ -98,6 +100,7 @@ export default function HomeUsersCard({ homeId }: { homeId: string }) {
     try {
       const data = await createHomeInvite(homeId, expiryHours);
       setInviteData(data);
+      await fetchInvite();
     } catch (error) {
       console.error("Failed to create invite:", error);
     }
@@ -107,7 +110,7 @@ export default function HomeUsersCard({ homeId }: { homeId: string }) {
     try {
       if (inviteData && inviteData[0]) {
         await deleteHomeInvite(homeId, inviteData[0].id);
-        setInviteData(null);
+        await fetchInvite();
       }
     } catch (error) {
       console.error("Failed to delete invite:", error);
@@ -216,53 +219,47 @@ export default function HomeUsersCard({ homeId }: { homeId: string }) {
               other users to join your home.
             </DialogDescription>
           </DialogHeader>
-          <div className="mt-4">
+          <div>
             {inviteData && inviteData[0] ? (
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">Invite Code:</span>
-                  <span
-                    className={
-                      inviteData[0].expiresAt &&
-                      new Date(inviteData[0].expiresAt) < new Date()
-                        ? "text-gray-500"
-                        : ""
-                    }
-                  >
-                    {inviteData[0].code}
-                  </span>
-                </div>
-                {inviteData[0].expiresAt && (
-                  <div className="text-sm text-gray-500">
-                    Expires:{" "}
-                    {new Date(inviteData[0].expiresAt).toLocaleString()}
-                  </div>
-                )}
-                {inviteData[0].expiresAt &&
-                  new Date(inviteData[0].expiresAt) < new Date() && (
-                    <Button variant="destructive" onClick={handleDeleteInvite}>
-                      Delete Expired Code
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <div className="text-lg font-semibold">
+                        {inviteData[0].code}
+                      </div>
+                      {inviteData[0].expiresAt && (
+                        <div className="text-sm text-muted-foreground">
+                          Expires:{" "}
+                          {new Date(inviteData[0].expiresAt).toLocaleString()}
+                        </div>
+                      )}
+                    </div>
+                    <Button
+                      size="icon"
+                      variant="destructive"
+                      onClick={handleDeleteInvite}
+                    >
+                      <CircleX />
                     </Button>
-                  )}
-              </div>
+                  </div>
+                </CardContent>
+              </Card>
             ) : (
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">No active invite code</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    placeholder="Expires in (hours)"
-                    className="border rounded p-2 w-24"
-                    min="1"
-                    onChange={(e) => setExpiryHours(Number(e.target.value))}
-                  />
-                  <Button onClick={handleCreateInvite}>
-                    Create Invite Code
-                  </Button>
-                </div>
-              </div>
+              <Card>
+                <CardContent className="pt-6 flex flex-col gap-3">
+                  <div className="font-medium">Create invite code</div>
+                  <div className="flex w-full items-center gap-2">
+                    <Input
+                      type="number"
+                      min="0"
+                      placeholder="Expires in (hours)"
+                    />
+                    <Button onClick={handleCreateInvite}>Create</Button>
+                  </div>
+                  <Label>Leave blank for no expiration.</Label>
+                </CardContent>
+              </Card>
             )}
           </div>
         </DialogContent>
