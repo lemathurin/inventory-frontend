@@ -100,6 +100,7 @@ export default function HomeUsersCard({ homeId }: { homeId: string }) {
     try {
       const data = await createHomeInvite(homeId, expiryHours);
       setInviteData(data);
+      setExpiryHours(0);
       await fetchInvite();
     } catch (error) {
       console.error("Failed to create invite:", error);
