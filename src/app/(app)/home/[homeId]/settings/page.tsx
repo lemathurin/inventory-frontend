@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/card";
 import HomeRoomsCard from "@/components/HomeSettings/HomeRoomsCard";
 import HomeUsersCard from "@/components/HomeSettings/HomeUsersCard";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -38,7 +39,8 @@ type FormData = z.infer<typeof formSchema>;
 export default function HomeSettings() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const updateHome = useUpdateHome();
-  const { homeData } = useHome();
+  const { homeData, isAdmin } = useHome();
+  const router = useRouter();
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -47,6 +49,11 @@ export default function HomeSettings() {
       address: "",
     },
   });
+
+  if (!isAdmin) {
+    router.replace("/404");
+    return null;
+  }
 
   // Reset form values when homeData is available
   useEffect(() => {
