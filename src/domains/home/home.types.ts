@@ -7,6 +7,7 @@ export interface HomeModel {
   rooms?: Array<{
     id: string;
     name: string;
+    users?: Array<{ userId: string; admin: boolean }>;
   }>;
   items?: Array<{
     id: string;

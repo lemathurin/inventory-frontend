@@ -43,6 +43,7 @@ import { AlertCircle } from "lucide-react";
 import { useCreateItem } from "@/domains/item/hooks/useCreateItem";
 import { useHome } from "@/domains/home/home.context";
 import { ErrorMessage } from "@/components/ErrorMessage";
+import { useUser } from "@/domains/user/user.context";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -63,6 +64,7 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function CreateItemForm() {
   const { homeData } = useHome();
+  const { userData } = useUser();
   const createItem = useCreateItem();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -274,11 +276,17 @@ export default function CreateItemForm() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {homeData.rooms?.map((room) => (
-                          <SelectItem key={room.id} value={room.id}>
-                            {room.name}
-                          </SelectItem>
-                        )) ?? []}
+                        {homeData.rooms
+                          ?.filter((room) =>
+                            room.users?.some(
+                              (user) => user.userId === userData?.userId,
+                            ),
+                          )
+                          .map((room) => (
+                            <SelectItem key={room.id} value={room.id}>
+                              {room.name}
+                            </SelectItem>
+                          )) ?? []}
                       </SelectContent>
                     </Select>
                     <ErrorMessage
