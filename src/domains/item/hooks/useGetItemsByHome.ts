@@ -2,7 +2,7 @@ import axios from "@/lib/axios";
 import { ITEM_ENDPOINTS } from "../endpoints";
 import { ItemModel } from "../item.types";
 
-export function useGetPublicItems() {
+export function useGetItemsByHome() {
   return async (
     homeId: string,
     options?: {
@@ -12,7 +12,7 @@ export function useGetPublicItems() {
     },
   ): Promise<ItemModel[]> => {
     try {
-      const endpoint = ITEM_ENDPOINTS.publicItems.replace(":homeId", homeId);
+      const endpoint = ITEM_ENDPOINTS.homeItems.replace(":homeId", homeId);
       const response = await axios.get<ItemModel[]>(endpoint, {
         params: options,
       });

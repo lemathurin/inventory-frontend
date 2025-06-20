@@ -6,24 +6,25 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import ItemCard from "@/components/ItemCard";
 import { ItemModel } from "@/domains/item/item.types";
-import { useGetPublicItems } from "@/domains/item/hooks/useGetPublicItems";
+import { useGetItemsByHome } from "@/domains/item/hooks/useGetItemsByHome";
 import { useEffect, useState } from "react";
 
 export default function HomePage() {
   const { homeData } = useHome();
-  const getPublicItems = useGetPublicItems();
+  const getItemsByHome = useGetItemsByHome();
   const [latestPublicItems, setLatestPublicItems] = useState<ItemModel[]>([]);
 
   useEffect(() => {
     if (!homeData) return;
     async function fetchLatestPublicItems() {
       try {
-        const items = await getPublicItems(homeData!.id, {
-          limit: 3,
+        const items = await getItemsByHome(homeData!.id, {
+          limit: 9,
           orderBy: "createdAt",
           orderDirection: "desc",
         });
         setLatestPublicItems(items);
+        console.log("Items data", items);
       } catch (err) {
         console.error(err);
       }
@@ -40,9 +41,9 @@ export default function HomePage() {
       <AppHeader
         breadcrumbs={[{ label: "Dashboard", isCurrent: true }]}
         actionButton={
-          <Link href={`/home/${homeData.id}/create-item`}>
-            <Button variant="outline">Create item</Button>
-          </Link>
+          <Button variant="outline" asChild>
+            <Link href={`/home/${homeData.id}/create-item`}>Create item</Link>
+          </Button>
         }
       />
       <div className="p-4 text-primary flex flex-col gap-8">

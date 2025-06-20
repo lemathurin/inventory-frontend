@@ -1,9 +1,10 @@
 export interface UserModel {
-  id: string;
+  userId: string;
   name: string;
   email: string;
   createdAt: Date;
   updatedAt: Date;
+  admin?: boolean;
   homes?: Array<{
     homeId: string;
     admin: boolean;

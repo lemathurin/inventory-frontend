@@ -11,10 +11,12 @@ import {
 import { HomeModel } from "@/domains/home/home.types";
 import { useGetHomeById } from "@/domains/home/hooks/useGetHomeById";
 import { useParams } from "next/navigation";
+import { useGetHomePermissions } from "@/domains/home/hooks/useGetHomePermissions";
 
 type HomeContextType = {
   homeData: HomeModel | null;
   refreshHomeData: (homeId: string) => Promise<void>;
+  isAdmin: boolean;
 };
 
 const HomeContext = createContext<HomeContextType | null>(null);
@@ -22,8 +24,10 @@ const HomeContext = createContext<HomeContextType | null>(null);
 export function HomeProvider({ children }: { children: ReactNode }) {
   const params = useParams();
   const getHomeById = useGetHomeById();
+  const getHomePermissions = useGetHomePermissions();
   const homeId = params?.homeId as string;
   const [homeData, setHomeData] = useState<HomeModel | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const refreshHomeData = useCallback(
     async (homeId: string) => {
@@ -41,11 +45,15 @@ export function HomeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (homeId) {
       refreshHomeData(homeId);
+      getHomePermissions(homeId).then((permissions) => {
+        setIsAdmin(permissions.admin);
+        console.log("Is home admin:", permissions.admin);
+      });
     }
   }, [homeId]);
 
   return (
-    <HomeContext.Provider value={{ homeData, refreshHomeData }}>
+    <HomeContext.Provider value={{ homeData, refreshHomeData, isAdmin }}>
       {children}
     </HomeContext.Provider>
   );

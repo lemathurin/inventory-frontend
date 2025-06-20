@@ -25,7 +25,7 @@ export default function StartOnboarding() {
     if (selectedValue === "create") {
       router.push(`/onboarding/create/step-1`);
     } else if (selectedValue === "join") {
-      router.push(`/onboarding/join`);
+      router.push(`/onboarding/join/step-1`);
     } else {
       console.warn("No option selected");
     }
