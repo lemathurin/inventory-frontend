@@ -17,18 +17,22 @@ import {
   FileText,
   Square,
 } from "lucide-react";
+import { useGetItemPermissions } from "@/domains/item/hooks/useGetItemPermissions";
 
 export default function ItemPage() {
   const { homeId, itemId } = useParams<{ homeId: string; itemId: string }>();
   const getItemById = useGetItemById();
+  const getItemPermissions = useGetItemPermissions();
   const [item, setItem] = useState<ItemModel | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isItemAdmin, setIsItemAdmin] = useState(false);
 
   useEffect(() => {
     if (!itemId) return;
 
     fetchItem();
+    fetchPermissions();
   }, [itemId]);
 
   async function fetchItem() {
@@ -42,6 +46,15 @@ export default function ItemPage() {
       console.error("Error fetching item:", err);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function fetchPermissions() {
+    try {
+      const permissions = await getItemPermissions(itemId);
+      setIsItemAdmin(permissions.admin);
+    } catch (err) {
+      console.error("Error fetching permissions:", err);
     }
   }
 
@@ -67,7 +80,7 @@ export default function ItemPage() {
           },
           { label: item.name, isCurrent: true },
         ]}
-        actionButton={<Button>Edit item</Button>}
+        actionButton={isItemAdmin && <Button>Edit item</Button>}
       />
       <div className="p-4 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
