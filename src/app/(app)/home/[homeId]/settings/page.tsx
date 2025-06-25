@@ -50,10 +50,11 @@ export default function HomeSettings() {
     },
   });
 
-  if (!isAdmin) {
-    router.replace("/404");
-    return null;
-  }
+  useEffect(() => {
+    if (homeData && isAdmin === false) {
+      router.back();
+    }
+  }, [homeData, isAdmin, router]);
 
   // Reset form values when homeData is available
   useEffect(() => {
