@@ -278,7 +278,7 @@ export default function AccountSettings() {
                   newPassword !== confirmPassword
                 }
               >
-                Change Password"
+                Change Password
               </Button>
             </form>
           </CardContent>

@@ -57,7 +57,7 @@ export default function OnboardingCreateStep2() {
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle className="text-2xl font-bold">Rooms</CardTitle>
-            <CardDescription>Add your home's rooms</CardDescription>
+            <CardDescription>Add your home&apos;s rooms</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex w-full items-center space-x-2">
