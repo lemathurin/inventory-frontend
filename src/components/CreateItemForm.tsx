@@ -29,7 +29,7 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { format } from "date-fns";
-import { CalendarIcon, CirclePlus, Upload, X } from "lucide-react";
+import { CalendarIcon, CirclePlus, Upload } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
 import {

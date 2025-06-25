@@ -91,7 +91,11 @@ export function NavMain() {
               </Collapsible>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild>
+              <SidebarMenuButton
+                asChild
+                disabled
+                className="opacity-50 cursor-not-allowed"
+              >
                 <Link href="#">
                   <FileText />
                   <span>Warranties</span>

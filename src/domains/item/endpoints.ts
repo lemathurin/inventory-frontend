@@ -3,4 +3,5 @@ export const ITEM_ENDPOINTS = {
   createItem: "/items/:homeId/item",
   homeItems: "/items/home/:homeId",
   roomItems: "/items/room/:roomId",
+  permissions: "/items/:itemId/permissions",
 } as const;

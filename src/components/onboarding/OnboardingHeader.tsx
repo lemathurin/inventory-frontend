@@ -18,9 +18,9 @@ interface OnboardingHeaderProps {
 }
 
 const BreadcrumbLabels = {
-  start: "Create or join a home",
-  "step-1": "Create home",
-  "step-2": "Create Home",
+  start: "Getting started",
+  join: "Join a home",
+  create: "Create a home",
 } as const;
 
 export default function OnboardingHeader({
@@ -29,12 +29,23 @@ export default function OnboardingHeader({
 }: OnboardingHeaderProps) {
   const pathname = usePathname();
 
-  const segments = pathname.split("/").filter(Boolean);
-  const breadcrumbs = segments
-    .map(
-      (segment) => BreadcrumbLabels[segment as keyof typeof BreadcrumbLabels],
-    )
-    .filter(Boolean);
+  const getBreadcrumbs = () => {
+    const breadcrumbs = [];
+
+    if (pathname.includes("/onboarding/start")) {
+      breadcrumbs.push(BreadcrumbLabels.start);
+    } else if (pathname.includes("/onboarding/create")) {
+      breadcrumbs.push(BreadcrumbLabels.start);
+      breadcrumbs.push(BreadcrumbLabels.create);
+    } else if (pathname.includes("/onboarding/join")) {
+      breadcrumbs.push(BreadcrumbLabels.start);
+      breadcrumbs.push(BreadcrumbLabels.join);
+    }
+
+    return breadcrumbs;
+  };
+
+  const breadcrumbs = getBreadcrumbs();
 
   return (
     <div className="w-full fixed p-8 flex justify-between gap-2.5 flex-wrap">
@@ -42,10 +53,6 @@ export default function OnboardingHeader({
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink>Home Inventory App</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink>Sign up</BreadcrumbLink>
           </BreadcrumbItem>
           {breadcrumbs.map((label, index) => (
             <React.Fragment key={index}>
