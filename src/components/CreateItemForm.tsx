@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useRouter } from "next/navigation"; // AJOUT: Import du router
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -66,6 +67,7 @@ export default function CreateItemForm() {
   const { homeData } = useHome();
   const { userData } = useUser();
   const createItem = useCreateItem();
+  const router = useRouter(); // AJOUT: Initialisation du router
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -114,7 +116,10 @@ export default function CreateItemForm() {
         data.warrantyType || "",
         data.warrantyLength,
       );
+
       form.reset();
+
+      router.push(`/home/${homeData!.id}/room/${data.roomId}`);
     } catch (err) {
       console.error("Failed to create item:", err);
       setError("An error occurred while creating the item. Please try again.");
