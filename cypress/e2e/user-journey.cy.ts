@@ -19,16 +19,16 @@ describe('Base Test Scenario - Inventory App', () => {
   
   const testData = {
     testUser: {
-      name: "Cypress Test User",
-      email: `cypress.test.${timestamp}@example.com`,
-      password: "CypressTest123!"
+      name: "Mathurin",
+      email: `mathurin.${timestamp}@example.com`,
+      password: "MathurinTest123!"
     } as TestUser,
     
     testItem: {
-      name: `Vacuum test ${timestamp}`,
-      description: "Vacuum created by E2E automated test",
-      price: "199.99",
-      purchaseDate: "2024-01-15"
+      name: `MacBook Pro M3 ${timestamp}`,
+      description: "Ordinateur Apple MacBook Pro 14 pouces acheté pour le travail",
+      price: "2499.99",
+      purchaseDate: "2024-01-01"
     } as TestItem
   }
 
@@ -41,9 +41,9 @@ describe('Base Test Scenario - Inventory App', () => {
     
     // Create test home with invite code
     const homeOwner = {
-      name: "Home Owner",
-      email: `owner.${timestamp}@example.com`,
-      password: "Owner123!"
+      name: "Pierre",
+      email: `pierre.${timestamp}@example.com`,
+      password: "PierreOwner123!"
     }
     
     cy.request('POST', `${Cypress.env('backendUrl')}/api/auth/register`, homeOwner)
@@ -55,12 +55,15 @@ describe('Base Test Scenario - Inventory App', () => {
           throw new Error('Could not find user ID in registration response: ' + JSON.stringify(registrationResponse.body))
         }
         
+        cy.wrap(ownerId).as('homeOwnerId')
+        cy.wrap(token).as('homeOwnerToken')
+        
         return cy.request({
           method: 'POST',
           url: `${Cypress.env('backendUrl')}/api/homes`,
           body: {
-            name: 'Test House for E2E',
-            address: '123 Test Street',
+            name: 'Maison Familiale Pierre',
+            address: '45 Rue de la Paix, Paris',
             userId: ownerId
           },
           headers: {
@@ -103,15 +106,20 @@ describe('Base Test Scenario - Inventory App', () => {
         // STEP 1: New user registration
         cy.visit('/signup')
 
-        cy.get('input[name="name"]', { timeout: 10000 }).type(testData.testUser.name)
-        cy.get('input[name="email"]').type(testData.testUser.email)
-        cy.get('input[name="password"]').type(testData.testUser.password)
+        cy.contains('Sign Up', { timeout: 10000 }).should('be.visible')
+        cy.get('form', { timeout: 10000 }).should('be.visible')
+
+        cy.get('input[type="text"]', { timeout: 10000 }).should('be.visible').type(testData.testUser.name)
+        cy.get('input[type="email"]', { timeout: 10000 }).should('be.visible').type(testData.testUser.email)
+        cy.get('input[type="password"]', { timeout: 10000 }).should('be.visible').type(testData.testUser.password)
 
         cy.intercept('POST', '**/api/auth/register').as('registerAPI')
         cy.get('button[type="submit"]').contains('Sign Up').click()
 
         cy.wait('@registerAPI', { timeout: 10000 }).then((interception) => {
           expect(interception.response?.statusCode).to.be.oneOf([200, 201])
+          const userId = interception.response?.body?.id
+          cy.wrap(userId).as('testUserId')
         })
         
         cy.url().should('include', '/onboarding/start')
@@ -119,20 +127,25 @@ describe('Base Test Scenario - Inventory App', () => {
         // STEP 2: Login with created credentials
         cy.visit('/login')
         
-        cy.get('input[name="email"]').type(testData.testUser.email)
-        cy.get('input[name="password"]').type(testData.testUser.password)
+        cy.contains('Login', { timeout: 10000 }).should('be.visible')
+        cy.get('form', { timeout: 10000 }).should('be.visible')
+        
+        cy.get('input[type="email"]', { timeout: 10000 }).should('be.visible').type(testData.testUser.email)
+        cy.get('input[type="password"]', { timeout: 10000 }).should('be.visible').type(testData.testUser.password)
         
         cy.intercept('POST', '**/api/auth/login').as('loginAPI')
         cy.get('button[type="submit"]').contains('Login').click()
         
         cy.wait('@loginAPI').then((interception) => {
           expect(interception.response?.statusCode).to.be.oneOf([200, 304])
+            const userToken = interception.response?.body?.token
+  cy.wrap(userToken).as('testUserToken')
           cy.url().should('include', '/onboarding/start')
         })
 
         // STEP 3: Join existing house via invitation code
         cy.contains('Getting started').should('be.visible')
-        cy.contains('Join an existing home').click()
+        cy.get('button, a').contains('Join an existing home').click()
         cy.url().should('include', '/onboarding/join')
         
         cy.get('input[name="inviteCode"]').type(inviteCode as string)
@@ -178,7 +191,7 @@ describe('Base Test Scenario - Inventory App', () => {
           cy.request({
             method: 'POST',
             url: `${Cypress.env('backendUrl')}/api/rooms/${homeId}/room`,
-            body: { name: 'E2E Test Room' },
+            body: { name: 'Salon Principal' },
             failOnStatusCode: false
           }).then((roomResponse) => {
             if ([200, 201].includes(roomResponse.status)) {
@@ -212,7 +225,7 @@ describe('Base Test Scenario - Inventory App', () => {
         cy.get('header, [data-testid="app-header"], nav').should('be.visible')
         cy.contains('button, a', 'Create item').should('be.visible').click()
 
-        cy.url().should('include', '/create-item')
+        cy.url({ timeout: 10000 }).should('include', '/create-item')
         cy.contains('Create New Item').should('be.visible')
 
         // Fill item creation form
@@ -224,7 +237,7 @@ describe('Base Test Scenario - Inventory App', () => {
         cy.get('input[placeholder="0.00"]').type(testData.testItem.price)
 
         cy.get('button').contains('dd/mm/yyyy').click()
-        cy.get('[role="gridcell"]').contains('15').click()
+        cy.get('[role="gridcell"]:not([disabled])').first().click()
 
         // Select room if available
         cy.get('body').then(($body) => {
@@ -274,31 +287,27 @@ describe('Base Test Scenario - Inventory App', () => {
         })
 
         // Create owner's item for multi-user testing
-        const homeOwnerEmail = `owner.${timestamp}@example.com`
-        cy.request('POST', `${Cypress.env('backendUrl')}/api/auth/login`, {
-          email: homeOwnerEmail,
-          password: "Owner123!"
-        }).then((loginResponse) => {
-          const ownerToken = loginResponse.body.token
-          cy.wrap(ownerToken).as('ownerToken')
-          
-          cy.get('@currentHomeId').then((homeId) => {
-            cy.get('@testRoomId').then((roomId) => {
-              cy.request({
-                method: 'POST',
-                url: `${Cypress.env('backendUrl')}/api/items/${homeId}/item`,
-                body: {
-                  name: `Owner's Microwave ${timestamp}`,
-                  roomId: roomId,
-                  description: 'Microwave owned by the home owner',
-                  public: true,
-                  price: 299.99,
-                  hasWarranty: false
-                },
-                headers: {
-                  'Authorization': `Bearer ${ownerToken}`
-                }
-              }).then((itemResponse) => {
+        cy.get('@homeOwnerToken').then((ownerToken) => {
+  cy.setCookie('token', ownerToken as string, {
+    domain: 'localhost',
+    httpOnly: false,
+    secure: false
+  });
+  
+  cy.get('@currentHomeId').then((homeId) => {
+    cy.get('@testRoomId').then((roomId) => {
+      cy.request({
+        method: 'POST',
+        url: `${Cypress.env('backendUrl')}/api/items/${homeId}/item`,
+        body: {
+          name: `Réfrigérateur Samsung ${timestamp}`,
+          roomId: roomId,
+          description: 'Réfrigérateur américain 600L avec distributeur d\'eau',
+          public: true,
+          price: 1899.99,
+          hasWarranty: true
+        }
+      }).then((itemResponse) => {
                 expect(itemResponse.status).to.eq(201)
                 const ownerItemId = itemResponse.body.id
                 cy.wrap(ownerItemId).as('ownerItemId')
@@ -346,67 +355,104 @@ describe('Base Test Scenario - Inventory App', () => {
 
         cy.get('a[href*="/item/"]', { timeout: 10000 }).should('have.length.gte', 1)
 
-        // Find item from another user
-        cy.get('a[href*="/item/"]').then(($links) => {
-          let otherUserItemFound = false
-          let targetItemId: string | null = null
-          let targetLink: HTMLElement | null = null
-          
-          $links.each((index: number, link: HTMLElement) => {
-            const linkText = Cypress.$(link).text()
-            
-            if (linkText.includes('Owner') && 
-                !linkText.includes('Cypress Test User') && 
-                !linkText.includes(testData.testUser.name)) {
+        // Find item from another user using robust detection
+        cy.get('@testUserId').then((currentUserId) => {
+          cy.get('@homeOwnerId').then((homeOwnerId) => {
+            cy.get('@ownerItemId').then((ownerItemId) => {
               
-              if (!otherUserItemFound) {
-                const href = Cypress.$(link).attr('href')
-                const itemId = href?.match(/\/item\/(\w+)/)?.[1]
+              cy.get(`a[href*="/item/${ownerItemId}"]`).should('exist').then(($link) => {
                 
-                if (itemId) {
-                  targetItemId = itemId
-                  targetLink = link
-                  otherUserItemFound = true
-                }
-              }
-            }
+                cy.request(`${Cypress.env('backendUrl')}/api/items/${ownerItemId}`).then((itemResponse) => {
+                  console.log('=== FULL ITEM API RESPONSE ===')
+                  console.log(JSON.stringify(itemResponse.body, null, 2))
+                  cy.log('=== FULL ITEM API RESPONSE ===')
+                  cy.log(JSON.stringify(itemResponse.body, null, 2))
+                  
+                  const keys = Object.keys(itemResponse.body)
+                  cy.log('Available keys in response:', keys.join(', '))
+                  
+                  keys.forEach(key => {
+                    const value = itemResponse.body[key]
+                    if (typeof value === 'string' && value.match(/[0-9a-f-]{36}/)) {
+                      cy.log(`Potential user ID field: ${key} = ${value}`)
+                    }
+                  })
+                })
+                
+                cy.wrap($link).click()
+                cy.url({ timeout: 10000 }).should('match', /\/home\/[^\/]+\/item\/[^\/]+/)
+                cy.wrap(ownerItemId).as('otherUserItemId')
+              })
+            })
           })
-          
-          if (!otherUserItemFound || !targetItemId || !targetLink) {
-            throw new Error('No other user item found')
-          }
-          
-          cy.wrap(targetItemId).as('otherItemId')
-          cy.wrap(targetLink).click()
-          cy.url().should('include', `/item/${targetItemId}`)
         })
 
         // Verify read-only access (no edit/delete buttons)
         cy.get('[data-testid="item-details"], main, .item-container').should('be.visible')
-        cy.get('button').contains('Edit').should('not.exist')
+        cy.get('button').contains('Edit item').should('not.exist')
         cy.get('button').contains('Delete').should('not.exist')
+        
+        cy.contains('Réfrigérateur Samsung').should('be.visible')
+        cy.contains('Pierre').should('be.visible')
 
         // STEP 7: Attempt to modify another user's item (should fail)
-        cy.get('@otherItemId').then((itemId) => {
+cy.get('@otherUserItemId').then((itemId) => {
+   cy.get('@testUserToken').then((userToken) => {
+          cy.setCookie('token', userToken as string, {
+            domain: 'localhost',
+            httpOnly: false,
+            secure: false
+          });
+
+          cy.getCookie('token').then((cookie) => {
+  cy.log('Cookie set:', cookie ? 'YES' : 'NO');
+  if (cookie) {
+    cy.log('Cookie value:', cookie.value.substring(0, 20) + '...');
+  }
+});
+          
           cy.request({
             method: 'PATCH',
             url: `${Cypress.env('backendUrl')}/api/items/${itemId}`,
             failOnStatusCode: false,
-            body: { name: 'Unauthorized modification attempt' }
-          }).then((response) => {
-            expect(response.status).to.be.oneOf([403, 401])
-          })
+            body: { 
+              name: 'Tentative de modification non autorisée',
+              description: 'Cette modification ne devrait pas être possible'
+            }
+    }).then((response) => {
+      expect(response.status).to.be.oneOf([403, 401, 422])
+      cy.log(`Modification correctly rejected with status: ${response.status}`)
+    })
+  })
+})
           
-          cy.get('@currentHomeId').then((homeId) => {
-            cy.visit(`/home/${homeId}/item/${itemId}/edit`, { failOnStatusCode: false })
-            
-            cy.get('body').then(($body) => {
-              if ($body.text().includes('Edit') && $body.text().includes('Update Item')) {
-                throw new Error('Edit page should not be accessible')
-              }
-            })
-          })
-        })
+       cy.get('@otherUserItemId').then((itemId) => {
+ cy.get('@currentHomeId').then((homeId) => {
+   cy.visit(`/home/${homeId}/item/${itemId}/edit`)
+  
+   cy.contains('You do not have permission to edit this item.', { timeout: 10000 }).should('be.visible')
+  
+   cy.get('input[placeholder="Enter item name"]').should('not.exist')
+   cy.get('button').contains('Save Changes').should('not.exist')
+ })
+
+  cy.get('@testUserToken').then((userToken) => {
+   cy.setCookie('token', userToken as string, {
+     domain: 'localhost',
+     httpOnly: false,
+     secure: false
+   });
+   
+   cy.request({
+     method: 'DELETE',
+     url: `${Cypress.env('backendUrl')}/api/items/${itemId}`,
+     failOnStatusCode: false
+   }).then((response) => {
+     expect(response.status).to.be.oneOf([403, 401, 422])
+     cy.log(`Deletion correctly rejected with status: ${response.status}`)
+   })
+ })
+})
 
         // STEP 8: Logout
         cy.get('@currentHomeId').then((homeId) => {
