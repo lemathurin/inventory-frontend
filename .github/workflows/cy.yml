@@ -1,19 +1,15 @@
 name: CI Pipeline
-
 on:
   pull_request:
     branches: [main, develop]
   push:
     branches: [develop]
-
 jobs:
   ci:
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
         node-version: [20.x, 23.x]
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -31,7 +27,7 @@ jobs:
         run: npm run lint
 
       - name: Format check
-        run: npx prettier --check
+        run: npx prettier --check .
 
       - name: Build project
         run: npm run build
@@ -44,3 +40,4 @@ jobs:
           npx cypress run --reporter spec
         env:
           CI: true
+          CYPRESS_API_URL: https://api-staging.yourapp.com
