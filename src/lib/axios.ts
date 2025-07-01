@@ -1,13 +1,12 @@
 import axios from "axios";
 import { apiUrl } from "@/config/api";
 
-const axiosInstance = axios.create({ 
+const axiosInstance = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
   withCredentials: true,
 });
-
 
 axiosInstance.interceptors.request.use((config) => {
   if (config.url) {
