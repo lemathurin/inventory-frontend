@@ -164,8 +164,6 @@ describe("Base Test Scenario - Inventory App", () => {
 
         cy.wait("@loginAPI").then((interception) => {
           expect(interception.response?.statusCode).to.be.oneOf([200, 304]);
-          const userToken = interception.response?.body?.token;
-          cy.wrap(userToken).as("testUserToken");
           cy.url().should("include", "/onboarding/start");
         });
 
@@ -339,35 +337,47 @@ describe("Base Test Scenario - Inventory App", () => {
         });
 
         // Create owner's item for multi-user testing
-        cy.get("@homeOwnerToken").then((ownerToken) => {
-          cy.setCookie("token", ownerToken as string, {
-            domain: "localhost",
-            httpOnly: false,
-            secure: false,
-          });
-
-          cy.get("@currentHomeId").then((homeId) => {
-            cy.get("@testRoomId").then((roomId) => {
-              cy.request({
-                method: "POST",
-                url: `${Cypress.env("backendUrl")}/api/items/${homeId}/item`,
-                body: {
-                  name: `Réfrigérateur Samsung ${timestamp}`,
-                  roomId: roomId,
-                  description:
-                    "Réfrigérateur américain 600L avec distributeur d'eau",
-                  public: true,
-                  price: 1899.99,
-                  hasWarranty: true,
-                },
-              }).then((itemResponse) => {
-                expect(itemResponse.status).to.eq(201);
-                const ownerItemId = itemResponse.body.id;
-                cy.wrap(ownerItemId).as("ownerItemId");
+        cy.request({
+          method: "POST",
+          url: `${Cypress.env("backendUrl")}/api/auth/login`,
+          body: {
+            email: homeOwner.email,
+            password: homeOwner.password,
+          },
+        })
+          .then(() => {
+            cy.get("@currentHomeId").then((homeId) => {
+              cy.get("@testRoomId").then((roomId) => {
+                cy.request({
+                  method: "POST",
+                  url: `${Cypress.env("backendUrl")}/api/items/${homeId}/item`,
+                  body: {
+                    name: `Réfrigérateur Samsung ${timestamp}`,
+                    roomId: roomId,
+                    description:
+                      "Réfrigérateur américain 600L avec distributeur d'eau",
+                    public: true,
+                    price: 1899.99,
+                    hasWarranty: true,
+                  },
+                }).then((itemResponse) => {
+                  expect(itemResponse.status).to.eq(201);
+                  const ownerItemId = itemResponse.body.id;
+                  cy.wrap(ownerItemId).as("ownerItemId");
+                });
               });
             });
+          })
+          .then(() => {
+            cy.request({
+              method: "POST",
+              url: `${Cypress.env("backendUrl")}/api/auth/login`,
+              body: {
+                email: testData.testUser.email,
+                password: testData.testUser.password,
+              },
+            });
           });
-        });
 
         // Refresh to see all items
         cy.get("@currentHomeId").then((homeId) => {
@@ -473,34 +483,19 @@ describe("Base Test Scenario - Inventory App", () => {
 
         // STEP 7: Attempt to modify another user's item (should fail)
         cy.get("@otherUserItemId").then((itemId) => {
-          cy.get("@testUserToken").then((userToken) => {
-            cy.setCookie("token", userToken as string, {
-              domain: "localhost",
-              httpOnly: false,
-              secure: false,
-            });
-
-            cy.getCookie("token").then((cookie) => {
-              cy.log("Cookie set:", cookie ? "YES" : "NO");
-              if (cookie) {
-                cy.log("Cookie value:", cookie.value.substring(0, 20) + "...");
-              }
-            });
-
-            cy.request({
-              method: "PATCH",
-              url: `${Cypress.env("backendUrl")}/api/items/${itemId}`,
-              failOnStatusCode: false,
-              body: {
-                name: "Tentative de modification non autorisée",
-                description: "Cette modification ne devrait pas être possible",
-              },
-            }).then((response) => {
-              expect(response.status).to.be.oneOf([403, 401, 422]);
-              cy.log(
-                `Modification correctly rejected with status: ${response.status}`,
-              );
-            });
+          cy.request({
+            method: "PATCH",
+            url: `${Cypress.env("backendUrl")}/api/items/${itemId}`,
+            failOnStatusCode: false,
+            body: {
+              name: "Tentative de modification non autorisée",
+              description: "Cette modification ne devrait pas être possible",
+            },
+          }).then((response) => {
+            expect(response.status).to.be.oneOf([403, 401, 422]);
+            cy.log(
+              `Modification correctly rejected with status: ${response.status}`,
+            );
           });
         });
 
@@ -516,23 +511,15 @@ describe("Base Test Scenario - Inventory App", () => {
             cy.get("button").contains("Save Changes").should("not.exist");
           });
 
-          cy.get("@testUserToken").then((userToken) => {
-            cy.setCookie("token", userToken as string, {
-              domain: "localhost",
-              httpOnly: false,
-              secure: false,
-            });
-
-            cy.request({
-              method: "DELETE",
-              url: `${Cypress.env("backendUrl")}/api/items/${itemId}`,
-              failOnStatusCode: false,
-            }).then((response) => {
-              expect(response.status).to.be.oneOf([403, 401, 422]);
-              cy.log(
-                `Deletion correctly rejected with status: ${response.status}`,
-              );
-            });
+          cy.request({
+            method: "DELETE",
+            url: `${Cypress.env("backendUrl")}/api/items/${itemId}`,
+            failOnStatusCode: false,
+          }).then((response) => {
+            expect(response.status).to.be.oneOf([403, 401, 422]);
+            cy.log(
+              `Deletion correctly rejected with status: ${response.status}`,
+            );
           });
         });
 
