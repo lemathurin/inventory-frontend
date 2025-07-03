@@ -40,4 +40,4 @@ jobs:
           npx cypress run --reporter spec
         env:
           CI: true
-          CYPRESS_API_URL: https://api-staging.yourapp.com
+          CYPRESS_API_URL: http://78.47.140.225:3010
