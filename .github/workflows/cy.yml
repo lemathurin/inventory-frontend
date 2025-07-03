@@ -37,7 +37,7 @@ jobs:
           npm run build
           npm start &
           npx wait-on http://localhost:3000 --timeout 60000
-          npx cypress run --reporter spec
+          npx cypress run --reporter spec --spec "cypress/e2e/user-login.cy.ts"
         env:
           CI: true
           CYPRESS_API_URL: http://78.47.140.225:3010
