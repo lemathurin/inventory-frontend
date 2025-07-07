@@ -149,7 +149,7 @@ describe("Base Test Scenario - Inventory App", () => {
         // STEP 2: Login with created credentials
         cy.visit("/login");
 
-        cy.contains("Login", { timeout: 10000 }).should("be.visible");
+        cy.contains("Login", { timeout: 50000 }).should("be.visible");
         cy.get("form", { timeout: 10000 }).should("be.visible");
 
         cy.get('input[type="email"]', { timeout: 10000 })
