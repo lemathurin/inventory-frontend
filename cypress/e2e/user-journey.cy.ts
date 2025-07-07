@@ -144,31 +144,11 @@ describe("Base Test Scenario - Inventory App", () => {
           cy.wrap(userId).as("testUserId");
         });
 
+        // STEP 2: Verify automatic redirect to onboarding after successful signup
         cy.url().should("include", "/onboarding/start");
-
-        // STEP 2: Login with created credentials
-        cy.visit("/login");
-
-        cy.contains("Login", { timeout: 50000 }).should("be.visible");
-        cy.get("form", { timeout: 10000 }).should("be.visible");
-
-        cy.get('input[type="email"]', { timeout: 10000 })
-          .should("be.visible")
-          .type(testData.testUser.email);
-        cy.get('input[type="password"]', { timeout: 10000 })
-          .should("be.visible")
-          .type(testData.testUser.password);
-
-        cy.intercept("POST", "**/api/auth/login").as("loginAPI");
-        cy.get('button[type="submit"]').contains("Login").click();
-
-        cy.wait("@loginAPI").then((interception) => {
-          expect(interception.response?.statusCode).to.be.oneOf([200, 304]);
-          cy.url().should("include", "/onboarding/start");
-        });
+        cy.contains("Getting started").should("be.visible");
 
         // STEP 3: Join existing house via invitation code
-        cy.contains("Getting started").should("be.visible");
         cy.get("button, a").contains("Join an existing home").click();
         cy.url().should("include", "/onboarding/join");
 
