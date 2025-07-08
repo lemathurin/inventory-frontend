@@ -378,10 +378,71 @@ describe("Base Test Scenario - Inventory App", () => {
         cy.contains("Log out").should("be.visible").click();
 
         cy.wait("@logoutAPI").then((interception) => {
-          expect(interception.response?.statusCode).to.be.oneOf([200, 204]);
+          expect(interception.response?.statusCode).to.eq(200);
         });
 
         cy.url({ timeout: 10000 }).should("include", "/login");
+
+        // Cleanup created data
+        cy.clearCookies();
+
+        // Delete owner's item to empty the room
+        cy.request({
+          method: "POST",
+          url: `${Cypress.env("backendUrl")}/api/auth/login`,
+          body: {
+            email: homeOwner.email,
+            password: homeOwner.password,
+          },
+          failOnStatusCode: false,
+        }).then((response) => {
+          if (response.status === 200) {
+            cy.get("@ownerItemId").then((itemId) => {
+              if (itemId) {
+                cy.request({
+                  method: "DELETE",
+                  url: `${Cypress.env("backendUrl")}/api/items/${itemId}`,
+                  failOnStatusCode: false,
+                });
+              }
+            });
+          }
+        });
+
+        cy.clearCookies();
+
+        // Delete test user's item and room
+        cy.request({
+          method: "POST",
+          url: `${Cypress.env("backendUrl")}/api/auth/login`,
+          body: {
+            email: testData.testUser.email,
+            password: testData.testUser.password,
+          },
+          failOnStatusCode: false,
+        }).then((response) => {
+          if (response.status === 200) {
+            cy.get("@newItemId").then((itemId) => {
+              if (itemId) {
+                cy.request({
+                  method: "DELETE",
+                  url: `${Cypress.env("backendUrl")}/api/items/${itemId}`,
+                  failOnStatusCode: false,
+                });
+              }
+            });
+
+            cy.get("@testRoomId").then((roomId) => {
+              if (roomId) {
+                cy.request({
+                  method: "DELETE",
+                  url: `${Cypress.env("backendUrl")}/api/rooms/${roomId}`,
+                  failOnStatusCode: false,
+                });
+              }
+            });
+          }
+        });
       });
   });
 });
