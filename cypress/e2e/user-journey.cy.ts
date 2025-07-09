@@ -1,6 +1,9 @@
 /// <reference path="../../node_modules/cypress/types/index.d.ts" />
 
 describe("Base Test Scenario - Inventory App", () => {
+  // ✅ API Base URL - switches between real backend (dev) and mocks (CI)
+  const API_BASE_URL = process.env.CI ? 'http://localhost:3000' : Cypress.env("backendUrl");
+  
   const timestamp = Date.now();
 
   interface TestUser {
@@ -44,8 +47,8 @@ describe("Base Test Scenario - Inventory App", () => {
       password: "PierreOwner123!",
     };
 
-    // Create home owner and setup home with invite code
-    cy.request("POST", `${Cypress.env("backendUrl")}/api/auth/register`, homeOwner)
+    // 1. CREATE HOME OWNER AND SETUP HOME WITH INVITE CODE
+    cy.request("POST", `${API_BASE_URL}/api/auth/register`, homeOwner)
       .then((registrationResponse) => {
         const ownerId = registrationResponse.body.id;
         
@@ -57,7 +60,7 @@ describe("Base Test Scenario - Inventory App", () => {
 
         return cy.request({
           method: "POST",
-          url: `${Cypress.env("backendUrl")}/api/auth/login`,
+          url: `${API_BASE_URL}/api/auth/login`,
           body: {
             email: homeOwner.email,
             password: homeOwner.password,
@@ -68,7 +71,7 @@ describe("Base Test Scenario - Inventory App", () => {
         return cy.get("@homeOwnerId").then((ownerId) => {
           return cy.request({
             method: "POST",
-            url: `${Cypress.env("backendUrl")}/api/homes`,
+            url: `${API_BASE_URL}/api/homes`,
             body: {
               name: "Maison Familiale Pierre",
               address: "45 Rue de la Paix, Paris",
@@ -88,7 +91,7 @@ describe("Base Test Scenario - Inventory App", () => {
 
         return cy.request({
           method: "POST",
-          url: `${Cypress.env("backendUrl")}/api/homes/${homeId}/invites`,
+          url: `${API_BASE_URL}/api/homes/${homeId}/invites`,
           body: {
             expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
           },
@@ -109,7 +112,7 @@ describe("Base Test Scenario - Inventory App", () => {
         return cy.wrap(inviteCode);
       })
       .then((inviteCode) => {
-        // New user registration
+        // 2. NEW USER REGISTRATION
         cy.visit("/signup");
 
         cy.contains("Sign Up", { timeout: 10000 }).should("be.visible");
@@ -134,7 +137,7 @@ describe("Base Test Scenario - Inventory App", () => {
           cy.wrap(userId).as("testUserId");
         });
 
-        // Verify automatic redirect to onboarding
+        // 3. VERIFY ONBOARDING FLOW AND JOIN EXISTING HOME
         cy.url().should("include", "/onboarding/start");
         cy.contains("Getting started").should("be.visible");
 
@@ -158,7 +161,7 @@ describe("Base Test Scenario - Inventory App", () => {
           }
         });
 
-        // View house items list
+        // 4. VIEW HOME ITEMS LIST
         cy.get("@currentHomeId").then((homeId) => {
           cy.intercept("GET", `**/api/items/home/${homeId}*`).as("getItemsAPI");
           cy.reload();
@@ -173,11 +176,11 @@ describe("Base Test Scenario - Inventory App", () => {
 
         cy.contains("Newest items").should("be.visible");
 
-        // Create room for item organization
+        // 5. CREATE ROOM FOR ITEM ORGANIZATION
         cy.get("@currentHomeId").then((homeId) => {
           cy.request({
             method: "POST",
-            url: `${Cypress.env("backendUrl")}/api/rooms/${homeId}/room`,
+            url: `${API_BASE_URL}/api/rooms/${homeId}/room`,
             body: { name: "Salon Principal" },
             failOnStatusCode: false,
           }).then((roomResponse) => {
@@ -192,7 +195,7 @@ describe("Base Test Scenario - Inventory App", () => {
           });
         });
 
-        // Create new item
+        // 6. CREATE NEW ITEM (UI FLOW)
         cy.get("@currentHomeId").then((homeId) => {
           cy.visit(`/home/${homeId}`);
           cy.url().should("include", `/home/${homeId}`);
@@ -247,16 +250,16 @@ describe("Base Test Scenario - Inventory App", () => {
           });
         });
 
-        // Verify item appears in home
+        // 7. VERIFY ITEM APPEARS IN HOME
         cy.url().should("include", `/home/`);
         cy.contains(testData.testItem.name, { timeout: 10000 }).should("be.visible");
 
-        // Create owner's item for multi-user testing
+        // 8. CREATE OWNER'S ITEM FOR MULTI-USER TESTING
         cy.clearCookies();
         
         cy.request({
           method: "POST",
-          url: `${Cypress.env("backendUrl")}/api/auth/login`,
+          url: `${API_BASE_URL}/api/auth/login`,
           body: {
             email: homeOwner.email,
             password: homeOwner.password,
@@ -266,7 +269,7 @@ describe("Base Test Scenario - Inventory App", () => {
             cy.get("@testRoomId").then((roomId) => {
               cy.request({
                 method: "POST",
-                url: `${Cypress.env("backendUrl")}/api/items/${homeId}/item`,
+                url: `${API_BASE_URL}/api/items/${homeId}/item`,
                 body: {
                   name: `Réfrigérateur Samsung ${timestamp}`,
                   roomId: roomId,
@@ -284,18 +287,17 @@ describe("Base Test Scenario - Inventory App", () => {
           });
         });
 
-        // Switch back to test user
+        // 9. SWITCH BACK TO TEST USER AND VIEW ALL ITEMS
         cy.clearCookies();
         cy.request({
           method: "POST",
-          url: `${Cypress.env("backendUrl")}/api/auth/login`,
+          url: `${API_BASE_URL}/api/auth/login`,
           body: {
             email: testData.testUser.email,
             password: testData.testUser.password,
           },
         });
 
-        // View all items in home
         cy.get("@currentHomeId").then((homeId) => {
           cy.visit(`/home/${homeId}`);
           cy.contains("Newest items", { timeout: 10000 }).should("be.visible");
@@ -303,7 +305,7 @@ describe("Base Test Scenario - Inventory App", () => {
 
         cy.get('a[href*="/item/"]', { timeout: 10000 }).should("have.length.gte", 1);
 
-        // View another user's item
+        // 10. TEST PERMISSION SYSTEM - VIEW ANOTHER USER'S ITEM
         cy.get("@ownerItemId").then((ownerItemId) => {
           // Mock permissions endpoint for items user is not member of
           cy.intercept("GET", `**/api/items/*/permissions`, (req) => {
@@ -321,7 +323,7 @@ describe("Base Test Scenario - Inventory App", () => {
           });
         });
 
-        // Verify read-only access
+        // 11. VERIFY READ-ONLY ACCESS TO OTHER USER'S ITEM
         cy.get('[data-testid="item-details"], main, .item-container').should("be.visible");
         cy.get("button").contains("Edit item").should("not.exist");
         cy.get("button").contains("Delete").should("not.exist");
@@ -329,11 +331,11 @@ describe("Base Test Scenario - Inventory App", () => {
         cy.contains("Réfrigérateur Samsung").should("be.visible");
         cy.contains("Pierre").should("be.visible");
 
-        // Attempt to modify another user's item (should fail)
+        // 12. TEST UNAUTHORIZED MODIFICATION ATTEMPTS
         cy.get("@otherUserItemId").then((itemId) => {
           cy.request({
             method: "PATCH",
-            url: `${Cypress.env("backendUrl")}/api/items/${itemId}`,
+            url: `${API_BASE_URL}/api/items/${itemId}`,
             failOnStatusCode: false,
             body: {
               name: "Tentative de modification non autorisée",
@@ -357,7 +359,7 @@ describe("Base Test Scenario - Inventory App", () => {
 
           cy.request({
             method: "DELETE",
-            url: `${Cypress.env("backendUrl")}/api/items/${itemId}`,
+            url: `${API_BASE_URL}/api/items/${itemId}`,
             failOnStatusCode: false,
           }).then((response) => {
             expect(response.status).to.be.oneOf([403, 401, 422]);
@@ -365,7 +367,7 @@ describe("Base Test Scenario - Inventory App", () => {
           });
         });
 
-        // Logout
+        // 13. TEST LOGOUT FUNCTIONALITY
         cy.get("@currentHomeId").then((homeId) => {
           cy.visit(`/home/${homeId}`);
         });
@@ -383,13 +385,13 @@ describe("Base Test Scenario - Inventory App", () => {
 
         cy.url({ timeout: 10000 }).should("include", "/login");
 
-        // Cleanup created data
+        // 14. CLEANUP CREATED TEST DATA
         cy.clearCookies();
 
         // Delete owner's item to empty the room
         cy.request({
           method: "POST",
-          url: `${Cypress.env("backendUrl")}/api/auth/login`,
+          url: `${API_BASE_URL}/api/auth/login`,
           body: {
             email: homeOwner.email,
             password: homeOwner.password,
@@ -401,7 +403,7 @@ describe("Base Test Scenario - Inventory App", () => {
               if (itemId) {
                 cy.request({
                   method: "DELETE",
-                  url: `${Cypress.env("backendUrl")}/api/items/${itemId}`,
+                  url: `${API_BASE_URL}/api/items/${itemId}`,
                   failOnStatusCode: false,
                 });
               }
@@ -414,7 +416,7 @@ describe("Base Test Scenario - Inventory App", () => {
         // Delete test user's item and room
         cy.request({
           method: "POST",
-          url: `${Cypress.env("backendUrl")}/api/auth/login`,
+          url: `${API_BASE_URL}/api/auth/login`,
           body: {
             email: testData.testUser.email,
             password: testData.testUser.password,
@@ -426,7 +428,7 @@ describe("Base Test Scenario - Inventory App", () => {
               if (itemId) {
                 cy.request({
                   method: "DELETE",
-                  url: `${Cypress.env("backendUrl")}/api/items/${itemId}`,
+                  url: `${API_BASE_URL}/api/items/${itemId}`,
                   failOnStatusCode: false,
                 });
               }
@@ -436,7 +438,7 @@ describe("Base Test Scenario - Inventory App", () => {
               if (roomId) {
                 cy.request({
                   method: "DELETE",
-                  url: `${Cypress.env("backendUrl")}/api/rooms/${roomId}`,
+                  url: `${API_BASE_URL}/api/rooms/${roomId}`,
                   failOnStatusCode: false,
                 });
               }

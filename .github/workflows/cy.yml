@@ -34,10 +34,8 @@ jobs:
 
       - name: Run E2E tests with Cypress
         run: |
-          npm run build
           npm start &
           npx wait-on http://localhost:3000 --timeout 60000
-          npx cypress run --reporter spec --spec "cypress/e2e/user-login.cy.ts"
+          npx cypress run --reporter spec --spec "cypress/e2e/user-journey.cy.ts"
         env:
           CI: true
-          CYPRESS_API_URL: http://78.47.140.225:3010
