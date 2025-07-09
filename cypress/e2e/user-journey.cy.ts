@@ -2,8 +2,10 @@
 
 describe("Base Test Scenario - Inventory App", () => {
   // ✅ API Base URL - switches between real backend (dev) and mocks (CI)
-  const API_BASE_URL = process.env.CI ? 'http://localhost:3000' : Cypress.env("backendUrl");
-  
+  const API_BASE_URL = process.env.CI
+    ? "http://localhost:3000"
+    : Cypress.env("backendUrl");
+
   const timestamp = Date.now();
 
   interface TestUser {
@@ -51,9 +53,12 @@ describe("Base Test Scenario - Inventory App", () => {
     cy.request("POST", `${API_BASE_URL}/api/auth/register`, homeOwner)
       .then((registrationResponse) => {
         const ownerId = registrationResponse.body.id;
-        
+
         if (!ownerId) {
-          throw new Error("Could not find user ID in registration response: " + JSON.stringify(registrationResponse.body));
+          throw new Error(
+            "Could not find user ID in registration response: " +
+              JSON.stringify(registrationResponse.body),
+          );
         }
 
         cy.wrap(ownerId).as("homeOwnerId");
@@ -81,10 +86,16 @@ describe("Base Test Scenario - Inventory App", () => {
         });
       })
       .then((homeResponse) => {
-        const homeId = homeResponse.body.id || homeResponse.body.home?.id || homeResponse.body.data?.id;
+        const homeId =
+          homeResponse.body.id ||
+          homeResponse.body.home?.id ||
+          homeResponse.body.data?.id;
 
         if (!homeId) {
-          throw new Error("Could not find home ID in creation response: " + JSON.stringify(homeResponse.body));
+          throw new Error(
+            "Could not find home ID in creation response: " +
+              JSON.stringify(homeResponse.body),
+          );
         }
 
         cy.wrap(homeId).as("testHomeId");
@@ -101,14 +112,17 @@ describe("Base Test Scenario - Inventory App", () => {
         const inviteCode = response.body.invite?.code;
 
         if (!inviteCode) {
-          throw new Error("Could not find invite code in response: " + JSON.stringify(response.body));
+          throw new Error(
+            "Could not find invite code in response: " +
+              JSON.stringify(response.body),
+          );
         }
 
         cy.wrap(inviteCode).as("validInviteCode");
 
         // Clear cookies before new user registration
         cy.clearCookies();
-        
+
         return cy.wrap(inviteCode);
       })
       .then((inviteCode) => {
@@ -153,7 +167,9 @@ describe("Base Test Scenario - Inventory App", () => {
         cy.wait("@joinHouseAPI").then((interception) => {
           expect(interception.response?.statusCode).to.be.oneOf([200, 304]);
 
-          const homeId = interception.response?.body?.home?.id || interception.response?.body?.homeId;
+          const homeId =
+            interception.response?.body?.home?.id ||
+            interception.response?.body?.homeId;
           if (homeId) {
             cy.wrap(homeId).as("currentHomeId");
             cy.visit(`/home/${homeId}`);
@@ -210,8 +226,12 @@ describe("Base Test Scenario - Inventory App", () => {
         cy.get("form").should("be.visible");
         cy.get('input[placeholder="Enter item name"]').should("be.visible");
 
-        cy.get('input[placeholder="Enter item name"]').type(testData.testItem.name);
-        cy.get('textarea[placeholder="Enter description or notes"]').type(testData.testItem.description);
+        cy.get('input[placeholder="Enter item name"]').type(
+          testData.testItem.name,
+        );
+        cy.get('textarea[placeholder="Enter description or notes"]').type(
+          testData.testItem.description,
+        );
         cy.get('input[placeholder="0.00"]').type(testData.testItem.price);
 
         cy.get("button").contains("dd/mm/yyyy").click();
@@ -220,26 +240,39 @@ describe("Base Test Scenario - Inventory App", () => {
         // Select room if available
         cy.get("body").then(($body) => {
           if ($body.find('button[role="combobox"]').length >= 2) {
-            cy.get('button[role="combobox"]').contains("Select room").parent().click();
-            cy.get('[data-radix-select-content], [role="listbox"]', { timeout: 10000 }).should("be.visible");
-            cy.get('[role="option"]').should("have.length.gte", 1).then(($options) => {
-              if ($options.length > 0) {
-                cy.wrap($options.first()).click();
-              }
-            });
+            cy.get('button[role="combobox"]')
+              .contains("Select room")
+              .parent()
+              .click();
+            cy.get('[data-radix-select-content], [role="listbox"]', {
+              timeout: 10000,
+            }).should("be.visible");
+            cy.get('[role="option"]')
+              .should("have.length.gte", 1)
+              .then(($options) => {
+                if ($options.length > 0) {
+                  cy.wrap($options.first()).click();
+                }
+              });
           }
         });
 
         // Select visibility
-        cy.contains("label", "Visibility").parent().within(() => {
-          cy.get('button[role="combobox"]').click();
-        });
-        cy.get('[data-radix-select-content], [role="listbox"]').should("be.visible");
+        cy.contains("label", "Visibility")
+          .parent()
+          .within(() => {
+            cy.get('button[role="combobox"]').click();
+          });
+        cy.get('[data-radix-select-content], [role="listbox"]').should(
+          "be.visible",
+        );
         cy.get('[role="option"]').contains("Public").click();
 
         // Submit form
         cy.get("@currentHomeId").then((homeId) => {
-          cy.intercept("POST", `**/api/items/${homeId}/item`).as("createItemAPI");
+          cy.intercept("POST", `**/api/items/${homeId}/item`).as(
+            "createItemAPI",
+          );
 
           cy.get('button[type="submit"]').contains("Create Item").click();
 
@@ -252,11 +285,13 @@ describe("Base Test Scenario - Inventory App", () => {
 
         // 7. VERIFY ITEM APPEARS IN HOME
         cy.url().should("include", `/home/`);
-        cy.contains(testData.testItem.name, { timeout: 10000 }).should("be.visible");
+        cy.contains(testData.testItem.name, { timeout: 10000 }).should(
+          "be.visible",
+        );
 
         // 8. CREATE OWNER'S ITEM FOR MULTI-USER TESTING
         cy.clearCookies();
-        
+
         cy.request({
           method: "POST",
           url: `${API_BASE_URL}/api/auth/login`,
@@ -273,7 +308,8 @@ describe("Base Test Scenario - Inventory App", () => {
                 body: {
                   name: `Réfrigérateur Samsung ${timestamp}`,
                   roomId: roomId,
-                  description: "Réfrigérateur américain 600L avec distributeur d'eau",
+                  description:
+                    "Réfrigérateur américain 600L avec distributeur d'eau",
                   public: true,
                   price: 1899.99,
                   hasWarranty: true,
@@ -303,28 +339,44 @@ describe("Base Test Scenario - Inventory App", () => {
           cy.contains("Newest items", { timeout: 10000 }).should("be.visible");
         });
 
-        cy.get('a[href*="/item/"]', { timeout: 10000 }).should("have.length.gte", 1);
+        cy.get('a[href*="/item/"]', { timeout: 10000 }).should(
+          "have.length.gte",
+          1,
+        );
 
         // 10. TEST PERMISSION SYSTEM - VIEW ANOTHER USER'S ITEM
         cy.get("@ownerItemId").then((ownerItemId) => {
           // Mock permissions endpoint for items user is not member of
           cy.intercept("GET", `**/api/items/*/permissions`, (req) => {
             if (req.url.includes(ownerItemId as string)) {
-              req.reply({ statusCode: 403, body: { error: "You do not have permission to view this item's permissions" } });
+              req.reply({
+                statusCode: 403,
+                body: {
+                  error:
+                    "You do not have permission to view this item's permissions",
+                },
+              });
             } else {
               req.reply({ statusCode: 200, body: { admin: true } });
             }
           }).as("mockPermissions");
 
-          cy.get(`a[href*="/item/${ownerItemId}"]`).should("exist").then(($link) => {
-            cy.wrap($link).click();
-            cy.url({ timeout: 10000 }).should("match", /\/home\/[^\/]+\/item\/[^\/]+/);
-            cy.wrap(ownerItemId).as("otherUserItemId");
-          });
+          cy.get(`a[href*="/item/${ownerItemId}"]`)
+            .should("exist")
+            .then(($link) => {
+              cy.wrap($link).click();
+              cy.url({ timeout: 10000 }).should(
+                "match",
+                /\/home\/[^\/]+\/item\/[^\/]+/,
+              );
+              cy.wrap(ownerItemId).as("otherUserItemId");
+            });
         });
 
         // 11. VERIFY READ-ONLY ACCESS TO OTHER USER'S ITEM
-        cy.get('[data-testid="item-details"], main, .item-container').should("be.visible");
+        cy.get('[data-testid="item-details"], main, .item-container').should(
+          "be.visible",
+        );
         cy.get("button").contains("Edit item").should("not.exist");
         cy.get("button").contains("Delete").should("not.exist");
 
@@ -343,7 +395,9 @@ describe("Base Test Scenario - Inventory App", () => {
             },
           }).then((response) => {
             expect(response.status).to.be.oneOf([403, 401, 422]);
-            cy.log(`Modification correctly rejected with status: ${response.status}`);
+            cy.log(
+              `Modification correctly rejected with status: ${response.status}`,
+            );
           });
         });
 
@@ -351,7 +405,9 @@ describe("Base Test Scenario - Inventory App", () => {
           cy.get("@currentHomeId").then((homeId) => {
             cy.visit(`/home/${homeId}/item/${itemId}/edit`);
 
-            cy.contains("You do not have permission to edit this item.", { timeout: 10000 }).should("be.visible");
+            cy.contains("You do not have permission to edit this item.", {
+              timeout: 10000,
+            }).should("be.visible");
 
             cy.get('input[placeholder="Enter item name"]').should("not.exist");
             cy.get("button").contains("Save Changes").should("not.exist");
@@ -363,7 +419,9 @@ describe("Base Test Scenario - Inventory App", () => {
             failOnStatusCode: false,
           }).then((response) => {
             expect(response.status).to.be.oneOf([403, 401, 422]);
-            cy.log(`Deletion correctly rejected with status: ${response.status}`);
+            cy.log(
+              `Deletion correctly rejected with status: ${response.status}`,
+            );
           });
         });
 
