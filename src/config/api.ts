@@ -4,6 +4,6 @@ export const API_BASE_URL: string =
 export const apiUrl = (path: string): string => {
   const apiPath = path.startsWith("/api") ? path : `/api${path}`;
   const url = `${API_BASE_URL}${apiPath}`;
-  // console.log("API URL:", url);
+  console.log("API URL:", url);
   return url;
 };

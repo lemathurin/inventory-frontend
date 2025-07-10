@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useRouter } from "next/navigation"; // AJOUT: Import du router
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -30,7 +29,7 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { format } from "date-fns";
-import { CalendarIcon, CirclePlus, Upload } from "lucide-react";
+import { CalendarIcon, CircleCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -41,9 +40,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react";
-import { useCreateItem } from "@/domains/item/hooks/useCreateItem";
-import { useHome } from "@/domains/home/home.context";
+import { useUpdateItem } from "@/domains/item/hooks/useUpdateItem";
 import { ErrorMessage } from "@/components/ErrorMessage";
+import { ItemModel } from "@/domains/item/item.types";
+import { useHome } from "@/domains/home/home.context";
 import { useUser } from "@/domains/user/user.context";
 
 const formSchema = z.object({
@@ -63,66 +63,61 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-export default function CreateItemForm() {
+interface EditItemFormProps {
+  item: ItemModel;
+  onSuccess?: () => void;
+  onCancel?: () => void;
+}
+
+export default function EditItemForm({
+  item,
+  onSuccess,
+  onCancel,
+}: EditItemFormProps) {
   const { homeData } = useHome();
   const { userData } = useUser();
-  const createItem = useCreateItem();
-  const router = useRouter(); // AJOUT: Initialisation du router
+  const updateItem = useUpdateItem();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      description: "",
-      price: undefined,
-      date: undefined,
-      roomId: "",
-      isPublic: false,
-      hasWarranty: false,
-      warrantyType: "",
-      warrantyLength: undefined,
+      name: item.name || "",
+      description: item.description || "",
+      price: item.price ?? undefined,
+      date: item.purchaseDate ? new Date(item.purchaseDate) : undefined,
+      roomId: item.rooms?.[0]?.id || "",
+      isPublic: item.public ?? false,
+      hasWarranty: item.hasWarranty ?? false,
+      warrantyType: item.warrantyType || "",
+      warrantyLength: item.warrantyLength ?? undefined,
     },
   });
 
   const hasWarranty = form.watch("hasWarranty");
   const warrantyType = form.watch("warrantyType");
 
-  if (!homeData) {
-    return (
-      <Card className="p-6">
-        <div className="flex items-center justify-center h-32">
-          <div className="text-muted-foreground">Loading...</div>
-        </div>
-      </Card>
-    );
-  }
-
   async function onSubmit(data: FormData) {
     setIsSubmitting(true);
     setError(null);
 
     try {
-      await createItem(
-        homeData!.id,
+      await updateItem(
+        item.id,
         data.name,
+        data.description,
         data.roomId,
-        data.description || "",
         data.isPublic,
-        data.date?.toISOString(),
-        data.price || 0,
+        data.date,
+        data.price,
         data.hasWarranty,
-        data.warrantyType || "",
+        data.warrantyType,
         data.warrantyLength,
       );
-
-      form.reset();
-
-      router.push(`/home/${homeData!.id}/room/${data.roomId}`);
+      if (onSuccess) onSuccess();
     } catch (err) {
-      console.error("Failed to create item:", err);
-      setError("An error occurred while creating the item. Please try again.");
+      setError("An error occurred while updating the item. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -131,8 +126,8 @@ export default function CreateItemForm() {
   return (
     <Card className="w-full mx-auto">
       <CardHeader>
-        <CardTitle>Create New Item</CardTitle>
-        <CardDescription>Add a new item to your home inventory</CardDescription>
+        <CardTitle>Edit Item</CardTitle>
+        <CardDescription>Modify this item's values</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -144,13 +139,14 @@ export default function CreateItemForm() {
                 </div>
                 <div className="flex-1">
                   <h3 className="text-sm font-medium text-red-800">
-                    Error creating item
+                    Error updating item
                   </h3>
                   <p className="text-sm text-red-700 mt-1">{error}</p>
                 </div>
               </div>
             )}
 
+            {/* Name */}
             <FormField
               control={form.control}
               name="name"
@@ -165,6 +161,7 @@ export default function CreateItemForm() {
               )}
             />
 
+            {/* Description */}
             <FormField
               control={form.control}
               name="description"
@@ -185,6 +182,7 @@ export default function CreateItemForm() {
               )}
             />
 
+            {/* Price and Date */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -202,14 +200,13 @@ export default function CreateItemForm() {
                           step="0.01"
                           placeholder="0.00"
                           className="pl-8"
-                          {...field}
-                          onChange={(e) =>
+                          value={field.value === undefined ? "" : field.value}
+                          onChange={(e) => {
+                            const val = e.target.value;
                             field.onChange(
-                              e.target.value
-                                ? Number.parseFloat(e.target.value)
-                                : undefined,
-                            )
-                          }
+                              val === "" ? undefined : Number.parseFloat(val),
+                            );
+                          }}
                         />
                       </div>
                     </FormControl>
@@ -263,6 +260,7 @@ export default function CreateItemForm() {
               />
             </div>
 
+            {/* Room and Visibility */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -272,7 +270,9 @@ export default function CreateItemForm() {
                     <FormLabel>Room</FormLabel>
                     <FormDescription>Where this item is kept</FormDescription>
                     <Select
-                      onValueChange={field.onChange}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                      }}
                       defaultValue={field.value}
                     >
                       <FormControl>
@@ -281,7 +281,7 @@ export default function CreateItemForm() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {homeData.rooms
+                        {homeData?.rooms
                           ?.filter((room) =>
                             room.users?.some(
                               (user) => user.userId === userData?.userId,
@@ -332,6 +332,7 @@ export default function CreateItemForm() {
               />
             </div>
 
+            {/* Warranty */}
             <Card>
               <CardContent className="pt-6">
                 <FormField
@@ -423,39 +424,17 @@ export default function CreateItemForm() {
               </CardContent>
             </Card>
 
-            <div>
-              <FormLabel>Images and Files</FormLabel>
-              <FormDescription>Upload images and PDFs</FormDescription>
-              <div className="mt-2 border border-dashed rounded-md p-6">
-                <div className="text-center">
-                  <Upload className="mx-auto h-8 w-8 text-muted-foreground" />
-                  <div className="mt-2">
-                    <label
-                      htmlFor="file-upload"
-                      className="cursor-pointer text-sm text-primary hover:text-primary/80"
-                    >
-                      Click to upload files
-                      <input
-                        id="file-upload"
-                        name="file-upload"
-                        type="file"
-                        className="sr-only"
-                        multiple
-                        accept="image/*,.pdf"
-                      />
-                    </label>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    PNG, JPG, PDF up to 10MB each
-                  </p>
-                </div>
-              </div>
+            <div className="flex gap-2">
+              <Button type="submit" disabled={isSubmitting} className="w-full">
+                <CircleCheck />
+                {isSubmitting ? "Saving..." : "Save Changes"}
+              </Button>
+              {onCancel && (
+                <Button type="button" variant="outline" onClick={onCancel}>
+                  Cancel
+                </Button>
+              )}
             </div>
-
-            <Button type="submit" disabled={isSubmitting} className="w-full">
-              <CirclePlus />
-              {isSubmitting ? "Creating Item..." : "Create Item"}
-            </Button>
           </form>
         </Form>
       </CardContent>

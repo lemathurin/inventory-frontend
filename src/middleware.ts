@@ -3,6 +3,10 @@ import type { NextRequest } from "next/server";
 
 // Add paths that don't require authentication
 const publicPaths = ["/", "/login", "/signup", "/terms", "/privacy"];
+
+// API routes that DON'T need authentication
+const publicApiPaths = ["/api/auth/register", "/api/auth/login"];
+
 const protectedApiPaths = ["/api/"];
 
 export function middleware(request: NextRequest) {
@@ -11,6 +15,15 @@ export function middleware(request: NextRequest) {
 
   // Allow access to public paths even without a token
   if (publicPaths.includes(pathname)) {
+    return NextResponse.next();
+  }
+
+  // Allow access to public API routes (register/login) without token
+  const isPublicApi = publicApiPaths.some((apiPath) =>
+    pathname.startsWith(apiPath),
+  );
+
+  if (isPublicApi) {
     return NextResponse.next();
   }
 
