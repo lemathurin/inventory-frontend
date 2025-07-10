@@ -20,9 +20,9 @@ export function middleware(request: NextRequest) {
 
   // Allow access to public API routes (register/login) without token
   const isPublicApi = publicApiPaths.some((apiPath) =>
-    pathname.startsWith(apiPath)
+    pathname.startsWith(apiPath),
   );
-  
+
   if (isPublicApi) {
     return NextResponse.next();
   }

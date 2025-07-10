@@ -1,7 +1,7 @@
 /// <reference path="../../node_modules/cypress/types/index.d.ts" />
 
 describe("Base Test Scenario - Inventory App", () => {
-const API_BASE_URL = 'http://localhost:3000';
+  const API_BASE_URL = "http://localhost:3000";
 
   const timestamp = Date.now();
 
@@ -124,12 +124,16 @@ const API_BASE_URL = 'http://localhost:3000';
       })
       .then((inviteCode) => {
         // 2. NEW USER REGISTRATION
-        cy.request("POST", `${API_BASE_URL}/api/auth/register`, testData.testUser)
+        cy.request(
+          "POST",
+          `${API_BASE_URL}/api/auth/register`,
+          testData.testUser,
+        )
           .then((registrationResponse) => {
             expect(registrationResponse.status).to.be.oneOf([200, 201]);
             const userId = registrationResponse.body.id;
             cy.wrap(userId).as("testUserId");
-            
+
             return cy.request({
               method: "POST",
               url: `${API_BASE_URL}/api/auth/login`,
@@ -141,8 +145,8 @@ const API_BASE_URL = 'http://localhost:3000';
           })
           .then((loginResponse) => {
             expect(loginResponse.status).to.eq(200);
-            cy.getCookie('token').should('exist');
-            
+            cy.getCookie("token").should("exist");
+
             return cy.request({
               method: "POST",
               url: `${API_BASE_URL}/api/homes/invites/accept`,
@@ -153,8 +157,9 @@ const API_BASE_URL = 'http://localhost:3000';
           })
           .then((joinResponse) => {
             expect(joinResponse.status).to.be.oneOf([200, 304]);
-            
-            const homeId = joinResponse.body?.home?.id || joinResponse.body?.homeId;
+
+            const homeId =
+              joinResponse.body?.home?.id || joinResponse.body?.homeId;
             if (homeId) {
               cy.wrap(homeId).as("currentHomeId");
               cy.visit(`/home/${homeId}`);
@@ -163,7 +168,9 @@ const API_BASE_URL = 'http://localhost:3000';
 
             // 4. VIEW HOME ITEMS LIST
             cy.get("@currentHomeId").then((homeId) => {
-              cy.intercept("GET", `**/api/items/home/${homeId}*`).as("getItemsAPI");
+              cy.intercept("GET", `**/api/items/home/${homeId}*`).as(
+                "getItemsAPI",
+              );
               cy.reload();
 
               cy.wait("@getItemsAPI").then((interception) => {
@@ -185,7 +192,8 @@ const API_BASE_URL = 'http://localhost:3000';
                 failOnStatusCode: false,
               }).then((roomResponse) => {
                 if ([200, 201].includes(roomResponse.status)) {
-                  const roomId = roomResponse.body.id || roomResponse.body.data?.id;
+                  const roomId =
+                    roomResponse.body.id || roomResponse.body.data?.id;
                   cy.wrap(roomId).as("testRoomId");
                   return cy.wrap(roomId);
                 } else {
@@ -201,8 +209,12 @@ const API_BASE_URL = 'http://localhost:3000';
               cy.url().should("include", `/home/${homeId}`);
             });
 
-            cy.get('header, [data-testid="app-header"], nav').should("be.visible");
-            cy.contains("button, a", "Create item").should("be.visible").click();
+            cy.get('header, [data-testid="app-header"], nav').should(
+              "be.visible",
+            );
+            cy.contains("button, a", "Create item")
+              .should("be.visible")
+              .click();
 
             cy.url({ timeout: 10000 }).should("include", "/create-item");
             cy.contains("Create New Item").should("be.visible");
@@ -260,11 +272,13 @@ const API_BASE_URL = 'http://localhost:3000';
 
               cy.get('button[type="submit"]').contains("Create Item").click();
 
-              cy.wait("@createItemAPI", { timeout: 15000 }).then((interception) => {
-                expect(interception.response?.statusCode).to.eq(201);
-                const itemId = interception.response?.body?.id;
-                cy.wrap(itemId).as("newItemId");
-              });
+              cy.wait("@createItemAPI", { timeout: 15000 }).then(
+                (interception) => {
+                  expect(interception.response?.statusCode).to.eq(201);
+                  const itemId = interception.response?.body?.id;
+                  cy.wrap(itemId).as("newItemId");
+                },
+              );
             });
 
             // 7. VERIFY ITEM APPEARS IN HOME
@@ -320,7 +334,9 @@ const API_BASE_URL = 'http://localhost:3000';
 
             cy.get("@currentHomeId").then((homeId) => {
               cy.visit(`/home/${homeId}`);
-              cy.contains("Newest items", { timeout: 10000 }).should("be.visible");
+              cy.contains("Newest items", { timeout: 10000 }).should(
+                "be.visible",
+              );
             });
 
             cy.get('a[href*="/item/"]', { timeout: 10000 }).should(
@@ -358,9 +374,9 @@ const API_BASE_URL = 'http://localhost:3000';
             });
 
             // 11. VERIFY READ-ONLY ACCESS TO OTHER USER'S ITEM
-            cy.get('[data-testid="item-details"], main, .item-container').should(
-              "be.visible",
-            );
+            cy.get(
+              '[data-testid="item-details"], main, .item-container',
+            ).should("be.visible");
             cy.get("button").contains("Edit item").should("not.exist");
             cy.get("button").contains("Delete").should("not.exist");
 
@@ -375,7 +391,8 @@ const API_BASE_URL = 'http://localhost:3000';
                 failOnStatusCode: false,
                 body: {
                   name: "Tentative de modification non autorisée",
-                  description: "Cette modification ne devrait pas être possible",
+                  description:
+                    "Cette modification ne devrait pas être possible",
                 },
               }).then((response) => {
                 expect(response.status).to.be.oneOf([403, 401, 422]);
@@ -393,7 +410,9 @@ const API_BASE_URL = 'http://localhost:3000';
                   timeout: 10000,
                 }).should("be.visible");
 
-                cy.get('input[placeholder="Enter item name"]').should("not.exist");
+                cy.get('input[placeholder="Enter item name"]').should(
+                  "not.exist",
+                );
                 cy.get("button").contains("Save Changes").should("not.exist");
               });
 
@@ -414,7 +433,9 @@ const API_BASE_URL = 'http://localhost:3000';
               cy.visit(`/home/${homeId}`);
             });
 
-            cy.contains("Newest items", { timeout: 10000 }).should("be.visible");
+            cy.contains("Newest items", { timeout: 10000 }).should(
+              "be.visible",
+            );
 
             cy.intercept("POST", "**/api/auth/logout").as("logoutAPI");
 
