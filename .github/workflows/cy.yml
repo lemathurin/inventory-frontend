@@ -36,6 +36,6 @@ jobs:
         run: |
           npm start &
           npx wait-on http://localhost:3000 --timeout 60000
-          npx cypress run --reporter spec --spec "cypress/e2e/user-journey.cy.ts"
+          npx cypress run --reporter spec --spec "cypress/e2e/user-login.cy.ts"
         env:
           CI: true
