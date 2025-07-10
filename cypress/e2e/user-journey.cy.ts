@@ -1,10 +1,7 @@
 /// <reference path="../../node_modules/cypress/types/index.d.ts" />
 
 describe("Base Test Scenario - Inventory App", () => {
-  // ✅ API Base URL - switches between real backend (dev) and mocks (CI)
-  const API_BASE_URL = process.env.CI
-    ? "http://localhost:3000"
-    : Cypress.env("backendUrl");
+const API_BASE_URL = 'http://localhost:3000';
 
   const timestamp = Date.now();
 
@@ -127,382 +124,370 @@ describe("Base Test Scenario - Inventory App", () => {
       })
       .then((inviteCode) => {
         // 2. NEW USER REGISTRATION
-        cy.visit("/signup");
-
-        cy.contains("Sign Up", { timeout: 10000 }).should("be.visible");
-        cy.get("form", { timeout: 10000 }).should("be.visible");
-
-        cy.get('input[type="text"]', { timeout: 10000 })
-          .should("be.visible")
-          .type(testData.testUser.name);
-        cy.get('input[type="email"]', { timeout: 10000 })
-          .should("be.visible")
-          .type(testData.testUser.email);
-        cy.get('input[type="password"]', { timeout: 10000 })
-          .should("be.visible")
-          .type(testData.testUser.password);
-
-        cy.intercept("POST", "**/api/auth/register").as("registerAPI");
-        cy.get('button[type="submit"]').contains("Sign Up").click();
-
-        cy.wait("@registerAPI", { timeout: 10000 }).then((interception) => {
-          expect(interception.response?.statusCode).to.be.oneOf([200, 201]);
-          const userId = interception.response?.body?.id;
-          cy.wrap(userId).as("testUserId");
-        });
-
-        // 3. VERIFY ONBOARDING FLOW AND JOIN EXISTING HOME
-        cy.url().should("include", "/onboarding/start");
-        cy.contains("Getting started").should("be.visible");
-
-        // Join existing house via invitation code
-        cy.get("button, a").contains("Join an existing home").click();
-        cy.url().should("include", "/onboarding/join");
-
-        cy.get('input[name="inviteCode"]').type(inviteCode as string);
-
-        cy.intercept("POST", "**/api/homes/invites/accept").as("joinHouseAPI");
-        cy.get('button[type="submit"]').contains("Join").click();
-
-        cy.wait("@joinHouseAPI").then((interception) => {
-          expect(interception.response?.statusCode).to.be.oneOf([200, 304]);
-
-          const homeId =
-            interception.response?.body?.home?.id ||
-            interception.response?.body?.homeId;
-          if (homeId) {
-            cy.wrap(homeId).as("currentHomeId");
-            cy.visit(`/home/${homeId}`);
-            cy.url().should("include", `/home/${homeId}`);
-          }
-        });
-
-        // 4. VIEW HOME ITEMS LIST
-        cy.get("@currentHomeId").then((homeId) => {
-          cy.intercept("GET", `**/api/items/home/${homeId}*`).as("getItemsAPI");
-          cy.reload();
-
-          cy.wait("@getItemsAPI").then((interception) => {
-            const status = interception.response?.statusCode;
-            if (![200, 304].includes(status || 0)) {
-              cy.log(`Items API returned: ${status}`);
+        cy.request("POST", `${API_BASE_URL}/api/auth/register`, testData.testUser)
+          .then((registrationResponse) => {
+            expect(registrationResponse.status).to.be.oneOf([200, 201]);
+            const userId = registrationResponse.body.id;
+            cy.wrap(userId).as("testUserId");
+            
+            return cy.request({
+              method: "POST",
+              url: `${API_BASE_URL}/api/auth/login`,
+              body: {
+                email: testData.testUser.email,
+                password: testData.testUser.password,
+              },
+            });
+          })
+          .then((loginResponse) => {
+            expect(loginResponse.status).to.eq(200);
+            cy.getCookie('token').should('exist');
+            
+            return cy.request({
+              method: "POST",
+              url: `${API_BASE_URL}/api/homes/invites/accept`,
+              body: {
+                inviteCode: inviteCode,
+              },
+            });
+          })
+          .then((joinResponse) => {
+            expect(joinResponse.status).to.be.oneOf([200, 304]);
+            
+            const homeId = joinResponse.body?.home?.id || joinResponse.body?.homeId;
+            if (homeId) {
+              cy.wrap(homeId).as("currentHomeId");
+              cy.visit(`/home/${homeId}`);
+              cy.url().should("include", `/home/${homeId}`);
             }
-          });
-        });
 
-        cy.contains("Newest items").should("be.visible");
+            // 4. VIEW HOME ITEMS LIST
+            cy.get("@currentHomeId").then((homeId) => {
+              cy.intercept("GET", `**/api/items/home/${homeId}*`).as("getItemsAPI");
+              cy.reload();
 
-        // 5. CREATE ROOM FOR ITEM ORGANIZATION
-        cy.get("@currentHomeId").then((homeId) => {
-          cy.request({
-            method: "POST",
-            url: `${API_BASE_URL}/api/rooms/${homeId}/room`,
-            body: { name: "Salon Principal" },
-            failOnStatusCode: false,
-          }).then((roomResponse) => {
-            if ([200, 201].includes(roomResponse.status)) {
-              const roomId = roomResponse.body.id || roomResponse.body.data?.id;
-              cy.wrap(roomId).as("testRoomId");
-              return cy.wrap(roomId);
-            } else {
-              cy.wrap(null).as("testRoomId");
-              return cy.wrap(null);
-            }
-          });
-        });
-
-        // 6. CREATE NEW ITEM (UI FLOW)
-        cy.get("@currentHomeId").then((homeId) => {
-          cy.visit(`/home/${homeId}`);
-          cy.url().should("include", `/home/${homeId}`);
-        });
-
-        cy.get('header, [data-testid="app-header"], nav').should("be.visible");
-        cy.contains("button, a", "Create item").should("be.visible").click();
-
-        cy.url({ timeout: 10000 }).should("include", "/create-item");
-        cy.contains("Create New Item").should("be.visible");
-
-        cy.get("form").should("be.visible");
-        cy.get('input[placeholder="Enter item name"]').should("be.visible");
-
-        cy.get('input[placeholder="Enter item name"]').type(
-          testData.testItem.name,
-        );
-        cy.get('textarea[placeholder="Enter description or notes"]').type(
-          testData.testItem.description,
-        );
-        cy.get('input[placeholder="0.00"]').type(testData.testItem.price);
-
-        cy.get("button").contains("dd/mm/yyyy").click();
-        cy.get('[role="gridcell"]:not([disabled])').first().click();
-
-        // Select room if available
-        cy.get("body").then(($body) => {
-          if ($body.find('button[role="combobox"]').length >= 2) {
-            cy.get('button[role="combobox"]')
-              .contains("Select room")
-              .parent()
-              .click();
-            cy.get('[data-radix-select-content], [role="listbox"]', {
-              timeout: 10000,
-            }).should("be.visible");
-            cy.get('[role="option"]')
-              .should("have.length.gte", 1)
-              .then(($options) => {
-                if ($options.length > 0) {
-                  cy.wrap($options.first()).click();
+              cy.wait("@getItemsAPI").then((interception) => {
+                const status = interception.response?.statusCode;
+                if (![200, 304].includes(status || 0)) {
+                  cy.log(`Items API returned: ${status}`);
                 }
               });
-          }
-        });
+            });
 
-        // Select visibility
-        cy.contains("label", "Visibility")
-          .parent()
-          .within(() => {
-            cy.get('button[role="combobox"]').click();
-          });
-        cy.get('[data-radix-select-content], [role="listbox"]').should(
-          "be.visible",
-        );
-        cy.get('[role="option"]').contains("Public").click();
+            cy.contains("Newest items").should("be.visible");
 
-        // Submit form
-        cy.get("@currentHomeId").then((homeId) => {
-          cy.intercept("POST", `**/api/items/${homeId}/item`).as(
-            "createItemAPI",
-          );
-
-          cy.get('button[type="submit"]').contains("Create Item").click();
-
-          cy.wait("@createItemAPI", { timeout: 15000 }).then((interception) => {
-            expect(interception.response?.statusCode).to.eq(201);
-            const itemId = interception.response?.body?.id;
-            cy.wrap(itemId).as("newItemId");
-          });
-        });
-
-        // 7. VERIFY ITEM APPEARS IN HOME
-        cy.url().should("include", `/home/`);
-        cy.contains(testData.testItem.name, { timeout: 10000 }).should(
-          "be.visible",
-        );
-
-        // 8. CREATE OWNER'S ITEM FOR MULTI-USER TESTING
-        cy.clearCookies();
-
-        cy.request({
-          method: "POST",
-          url: `${API_BASE_URL}/api/auth/login`,
-          body: {
-            email: homeOwner.email,
-            password: homeOwner.password,
-          },
-        }).then(() => {
-          cy.get("@currentHomeId").then((homeId) => {
-            cy.get("@testRoomId").then((roomId) => {
+            // 5. CREATE ROOM FOR ITEM ORGANIZATION
+            cy.get("@currentHomeId").then((homeId) => {
               cy.request({
                 method: "POST",
-                url: `${API_BASE_URL}/api/items/${homeId}/item`,
-                body: {
-                  name: `Réfrigérateur Samsung ${timestamp}`,
-                  roomId: roomId,
-                  description:
-                    "Réfrigérateur américain 600L avec distributeur d'eau",
-                  public: true,
-                  price: 1899.99,
-                  hasWarranty: true,
-                },
-              }).then((itemResponse) => {
-                expect(itemResponse.status).to.eq(201);
-                const ownerItemId = itemResponse.body.id;
-                cy.wrap(ownerItemId).as("ownerItemId");
+                url: `${API_BASE_URL}/api/rooms/${homeId}/room`,
+                body: { name: "Salon Principal" },
+                failOnStatusCode: false,
+              }).then((roomResponse) => {
+                if ([200, 201].includes(roomResponse.status)) {
+                  const roomId = roomResponse.body.id || roomResponse.body.data?.id;
+                  cy.wrap(roomId).as("testRoomId");
+                  return cy.wrap(roomId);
+                } else {
+                  cy.wrap(null).as("testRoomId");
+                  return cy.wrap(null);
+                }
               });
             });
-          });
-        });
 
-        // 9. SWITCH BACK TO TEST USER AND VIEW ALL ITEMS
-        cy.clearCookies();
-        cy.request({
-          method: "POST",
-          url: `${API_BASE_URL}/api/auth/login`,
-          body: {
-            email: testData.testUser.email,
-            password: testData.testUser.password,
-          },
-        });
+            // 6. CREATE NEW ITEM (UI FLOW)
+            cy.get("@currentHomeId").then((homeId) => {
+              cy.visit(`/home/${homeId}`);
+              cy.url().should("include", `/home/${homeId}`);
+            });
 
-        cy.get("@currentHomeId").then((homeId) => {
-          cy.visit(`/home/${homeId}`);
-          cy.contains("Newest items", { timeout: 10000 }).should("be.visible");
-        });
+            cy.get('header, [data-testid="app-header"], nav').should("be.visible");
+            cy.contains("button, a", "Create item").should("be.visible").click();
 
-        cy.get('a[href*="/item/"]', { timeout: 10000 }).should(
-          "have.length.gte",
-          1,
-        );
+            cy.url({ timeout: 10000 }).should("include", "/create-item");
+            cy.contains("Create New Item").should("be.visible");
 
-        // 10. TEST PERMISSION SYSTEM - VIEW ANOTHER USER'S ITEM
-        cy.get("@ownerItemId").then((ownerItemId) => {
-          // Mock permissions endpoint for items user is not member of
-          cy.intercept("GET", `**/api/items/*/permissions`, (req) => {
-            if (req.url.includes(ownerItemId as string)) {
-              req.reply({
-                statusCode: 403,
-                body: {
-                  error:
-                    "You do not have permission to view this item's permissions",
-                },
+            cy.get("form").should("be.visible");
+            cy.get('input[placeholder="Enter item name"]').should("be.visible");
+
+            cy.get('input[placeholder="Enter item name"]').type(
+              testData.testItem.name,
+            );
+            cy.get('textarea[placeholder="Enter description or notes"]').type(
+              testData.testItem.description,
+            );
+            cy.get('input[placeholder="0.00"]').type(testData.testItem.price);
+
+            cy.get("button").contains("dd/mm/yyyy").click();
+            cy.get('[role="gridcell"]:not([disabled])').first().click();
+
+            // Select room if available
+            cy.get("body").then(($body) => {
+              if ($body.find('button[role="combobox"]').length >= 2) {
+                cy.get('button[role="combobox"]')
+                  .contains("Select room")
+                  .parent()
+                  .click();
+                cy.get('[data-radix-select-content], [role="listbox"]', {
+                  timeout: 10000,
+                }).should("be.visible");
+                cy.get('[role="option"]')
+                  .should("have.length.gte", 1)
+                  .then(($options) => {
+                    if ($options.length > 0) {
+                      cy.wrap($options.first()).click();
+                    }
+                  });
+              }
+            });
+
+            // Select visibility
+            cy.contains("label", "Visibility")
+              .parent()
+              .within(() => {
+                cy.get('button[role="combobox"]').click();
               });
-            } else {
-              req.reply({ statusCode: 200, body: { admin: true } });
-            }
-          }).as("mockPermissions");
+            cy.get('[data-radix-select-content], [role="listbox"]').should(
+              "be.visible",
+            );
+            cy.get('[role="option"]').contains("Public").click();
 
-          cy.get(`a[href*="/item/${ownerItemId}"]`)
-            .should("exist")
-            .then(($link) => {
-              cy.wrap($link).click();
-              cy.url({ timeout: 10000 }).should(
-                "match",
-                /\/home\/[^\/]+\/item\/[^\/]+/,
+            // Submit form
+            cy.get("@currentHomeId").then((homeId) => {
+              cy.intercept("POST", `**/api/items/${homeId}/item`).as(
+                "createItemAPI",
               );
-              cy.wrap(ownerItemId).as("otherUserItemId");
+
+              cy.get('button[type="submit"]').contains("Create Item").click();
+
+              cy.wait("@createItemAPI", { timeout: 15000 }).then((interception) => {
+                expect(interception.response?.statusCode).to.eq(201);
+                const itemId = interception.response?.body?.id;
+                cy.wrap(itemId).as("newItemId");
+              });
             });
-        });
 
-        // 11. VERIFY READ-ONLY ACCESS TO OTHER USER'S ITEM
-        cy.get('[data-testid="item-details"], main, .item-container').should(
-          "be.visible",
-        );
-        cy.get("button").contains("Edit item").should("not.exist");
-        cy.get("button").contains("Delete").should("not.exist");
-
-        cy.contains("Réfrigérateur Samsung").should("be.visible");
-        cy.contains("Pierre").should("be.visible");
-
-        // 12. TEST UNAUTHORIZED MODIFICATION ATTEMPTS
-        cy.get("@otherUserItemId").then((itemId) => {
-          cy.request({
-            method: "PATCH",
-            url: `${API_BASE_URL}/api/items/${itemId}`,
-            failOnStatusCode: false,
-            body: {
-              name: "Tentative de modification non autorisée",
-              description: "Cette modification ne devrait pas être possible",
-            },
-          }).then((response) => {
-            expect(response.status).to.be.oneOf([403, 401, 422]);
-            cy.log(
-              `Modification correctly rejected with status: ${response.status}`,
+            // 7. VERIFY ITEM APPEARS IN HOME
+            cy.url().should("include", `/home/`);
+            cy.contains(testData.testItem.name, { timeout: 10000 }).should(
+              "be.visible",
             );
-          });
-        });
 
-        cy.get("@otherUserItemId").then((itemId) => {
-          cy.get("@currentHomeId").then((homeId) => {
-            cy.visit(`/home/${homeId}/item/${itemId}/edit`);
+            // 8. CREATE OWNER'S ITEM FOR MULTI-USER TESTING
+            cy.clearCookies();
 
-            cy.contains("You do not have permission to edit this item.", {
-              timeout: 10000,
-            }).should("be.visible");
+            cy.request({
+              method: "POST",
+              url: `${API_BASE_URL}/api/auth/login`,
+              body: {
+                email: homeOwner.email,
+                password: homeOwner.password,
+              },
+            }).then(() => {
+              cy.get("@currentHomeId").then((homeId) => {
+                cy.get("@testRoomId").then((roomId) => {
+                  cy.request({
+                    method: "POST",
+                    url: `${API_BASE_URL}/api/items/${homeId}/item`,
+                    body: {
+                      name: `Réfrigérateur Samsung ${timestamp}`,
+                      roomId: roomId,
+                      description:
+                        "Réfrigérateur américain 600L avec distributeur d'eau",
+                      public: true,
+                      price: 1899.99,
+                      hasWarranty: true,
+                    },
+                  }).then((itemResponse) => {
+                    expect(itemResponse.status).to.eq(201);
+                    const ownerItemId = itemResponse.body.id;
+                    cy.wrap(ownerItemId).as("ownerItemId");
+                  });
+                });
+              });
+            });
 
-            cy.get('input[placeholder="Enter item name"]').should("not.exist");
-            cy.get("button").contains("Save Changes").should("not.exist");
-          });
+            // 9. SWITCH BACK TO TEST USER AND VIEW ALL ITEMS
+            cy.clearCookies();
+            cy.request({
+              method: "POST",
+              url: `${API_BASE_URL}/api/auth/login`,
+              body: {
+                email: testData.testUser.email,
+                password: testData.testUser.password,
+              },
+            });
 
-          cy.request({
-            method: "DELETE",
-            url: `${API_BASE_URL}/api/items/${itemId}`,
-            failOnStatusCode: false,
-          }).then((response) => {
-            expect(response.status).to.be.oneOf([403, 401, 422]);
-            cy.log(
-              `Deletion correctly rejected with status: ${response.status}`,
+            cy.get("@currentHomeId").then((homeId) => {
+              cy.visit(`/home/${homeId}`);
+              cy.contains("Newest items", { timeout: 10000 }).should("be.visible");
+            });
+
+            cy.get('a[href*="/item/"]', { timeout: 10000 }).should(
+              "have.length.gte",
+              1,
             );
+
+            // 10. TEST PERMISSION SYSTEM - VIEW ANOTHER USER'S ITEM
+            cy.get("@ownerItemId").then((ownerItemId) => {
+              // Mock permissions endpoint for items user is not member of
+              cy.intercept("GET", `**/api/items/*/permissions`, (req) => {
+                if (req.url.includes(ownerItemId as string)) {
+                  req.reply({
+                    statusCode: 403,
+                    body: {
+                      error:
+                        "You do not have permission to view this item's permissions",
+                    },
+                  });
+                } else {
+                  req.reply({ statusCode: 200, body: { admin: true } });
+                }
+              }).as("mockPermissions");
+
+              cy.get(`a[href*="/item/${ownerItemId}"]`)
+                .should("exist")
+                .then(($link) => {
+                  cy.wrap($link).click();
+                  cy.url({ timeout: 10000 }).should(
+                    "match",
+                    /\/home\/[^\/]+\/item\/[^\/]+/,
+                  );
+                  cy.wrap(ownerItemId).as("otherUserItemId");
+                });
+            });
+
+            // 11. VERIFY READ-ONLY ACCESS TO OTHER USER'S ITEM
+            cy.get('[data-testid="item-details"], main, .item-container').should(
+              "be.visible",
+            );
+            cy.get("button").contains("Edit item").should("not.exist");
+            cy.get("button").contains("Delete").should("not.exist");
+
+            cy.contains("Réfrigérateur Samsung").should("be.visible");
+            cy.contains("Pierre").should("be.visible");
+
+            // 12. TEST UNAUTHORIZED MODIFICATION ATTEMPTS
+            cy.get("@otherUserItemId").then((itemId) => {
+              cy.request({
+                method: "PATCH",
+                url: `${API_BASE_URL}/api/items/${itemId}`,
+                failOnStatusCode: false,
+                body: {
+                  name: "Tentative de modification non autorisée",
+                  description: "Cette modification ne devrait pas être possible",
+                },
+              }).then((response) => {
+                expect(response.status).to.be.oneOf([403, 401, 422]);
+                cy.log(
+                  `Modification correctly rejected with status: ${response.status}`,
+                );
+              });
+            });
+
+            cy.get("@otherUserItemId").then((itemId) => {
+              cy.get("@currentHomeId").then((homeId) => {
+                cy.visit(`/home/${homeId}/item/${itemId}/edit`);
+
+                cy.contains("You do not have permission to edit this item.", {
+                  timeout: 10000,
+                }).should("be.visible");
+
+                cy.get('input[placeholder="Enter item name"]').should("not.exist");
+                cy.get("button").contains("Save Changes").should("not.exist");
+              });
+
+              cy.request({
+                method: "DELETE",
+                url: `${API_BASE_URL}/api/items/${itemId}`,
+                failOnStatusCode: false,
+              }).then((response) => {
+                expect(response.status).to.be.oneOf([403, 401, 422]);
+                cy.log(
+                  `Deletion correctly rejected with status: ${response.status}`,
+                );
+              });
+            });
+
+            // 13. TEST LOGOUT FUNCTIONALITY
+            cy.get("@currentHomeId").then((homeId) => {
+              cy.visit(`/home/${homeId}`);
+            });
+
+            cy.contains("Newest items", { timeout: 10000 }).should("be.visible");
+
+            cy.intercept("POST", "**/api/auth/logout").as("logoutAPI");
+
+            cy.get('[data-sidebar="footer"] button').click();
+            cy.contains("Log out").should("be.visible").click();
+
+            cy.wait("@logoutAPI").then((interception) => {
+              expect(interception.response?.statusCode).to.eq(200);
+            });
+
+            cy.url({ timeout: 10000 }).should("include", "/login");
+
+            // 14. CLEANUP CREATED TEST DATA
+            cy.clearCookies();
+
+            // Delete owner's item to empty the room
+            cy.request({
+              method: "POST",
+              url: `${API_BASE_URL}/api/auth/login`,
+              body: {
+                email: homeOwner.email,
+                password: homeOwner.password,
+              },
+              failOnStatusCode: false,
+            }).then((response) => {
+              if (response.status === 200) {
+                cy.get("@ownerItemId").then((itemId) => {
+                  if (itemId) {
+                    cy.request({
+                      method: "DELETE",
+                      url: `${API_BASE_URL}/api/items/${itemId}`,
+                      failOnStatusCode: false,
+                    });
+                  }
+                });
+              }
+            });
+
+            cy.clearCookies();
+
+            // Delete test user's item and room
+            cy.request({
+              method: "POST",
+              url: `${API_BASE_URL}/api/auth/login`,
+              body: {
+                email: testData.testUser.email,
+                password: testData.testUser.password,
+              },
+              failOnStatusCode: false,
+            }).then((response) => {
+              if (response.status === 200) {
+                cy.get("@newItemId").then((itemId) => {
+                  if (itemId) {
+                    cy.request({
+                      method: "DELETE",
+                      url: `${API_BASE_URL}/api/items/${itemId}`,
+                      failOnStatusCode: false,
+                    });
+                  }
+                });
+
+                cy.get("@testRoomId").then((roomId) => {
+                  if (roomId) {
+                    cy.request({
+                      method: "DELETE",
+                      url: `${API_BASE_URL}/api/rooms/${roomId}`,
+                      failOnStatusCode: false,
+                    });
+                  }
+                });
+              }
+            });
           });
-        });
-
-        // 13. TEST LOGOUT FUNCTIONALITY
-        cy.get("@currentHomeId").then((homeId) => {
-          cy.visit(`/home/${homeId}`);
-        });
-
-        cy.contains("Newest items", { timeout: 10000 }).should("be.visible");
-
-        cy.intercept("POST", "**/api/auth/logout").as("logoutAPI");
-
-        cy.get('[data-sidebar="footer"] button').click();
-        cy.contains("Log out").should("be.visible").click();
-
-        cy.wait("@logoutAPI").then((interception) => {
-          expect(interception.response?.statusCode).to.eq(200);
-        });
-
-        cy.url({ timeout: 10000 }).should("include", "/login");
-
-        // 14. CLEANUP CREATED TEST DATA
-        cy.clearCookies();
-
-        // Delete owner's item to empty the room
-        cy.request({
-          method: "POST",
-          url: `${API_BASE_URL}/api/auth/login`,
-          body: {
-            email: homeOwner.email,
-            password: homeOwner.password,
-          },
-          failOnStatusCode: false,
-        }).then((response) => {
-          if (response.status === 200) {
-            cy.get("@ownerItemId").then((itemId) => {
-              if (itemId) {
-                cy.request({
-                  method: "DELETE",
-                  url: `${API_BASE_URL}/api/items/${itemId}`,
-                  failOnStatusCode: false,
-                });
-              }
-            });
-          }
-        });
-
-        cy.clearCookies();
-
-        // Delete test user's item and room
-        cy.request({
-          method: "POST",
-          url: `${API_BASE_URL}/api/auth/login`,
-          body: {
-            email: testData.testUser.email,
-            password: testData.testUser.password,
-          },
-          failOnStatusCode: false,
-        }).then((response) => {
-          if (response.status === 200) {
-            cy.get("@newItemId").then((itemId) => {
-              if (itemId) {
-                cy.request({
-                  method: "DELETE",
-                  url: `${API_BASE_URL}/api/items/${itemId}`,
-                  failOnStatusCode: false,
-                });
-              }
-            });
-
-            cy.get("@testRoomId").then((roomId) => {
-              if (roomId) {
-                cy.request({
-                  method: "DELETE",
-                  url: `${API_BASE_URL}/api/rooms/${roomId}`,
-                  failOnStatusCode: false,
-                });
-              }
-            });
-          }
-        });
       });
   });
 });

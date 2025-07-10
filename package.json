@@ -5,13 +5,15 @@
   "scripts": {
     "dev": "next dev",
     "dev:prod": "cross-env NODE_ENV=production next dev",
+    "dev:test": "cross-env NEXT_PUBLIC_API_BASE_URL=http://localhost:3000 NEXT_PUBLIC_API_URL=http://localhost:3000 next dev -p 3000",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 4000",
     "lint": "next lint",
     "format:check": "prettier --check .",
     "prettier": "prettier --write .",
-    "test:e2e": "cypress run",
-    "test:e2e:open": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && cypress open\""
+    "test:e2e:open": "cypress open",
+    "test:e2e:full": "concurrently --kill-others --success first \"npm run dev:test\" \"wait-on http://localhost:3000 && cypress run\"",
+    "test:e2e:dev": "concurrently --kill-others \"npm run dev:test\" \"wait-on http://localhost:3000 && cypress open\""
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
