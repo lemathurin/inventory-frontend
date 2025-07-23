@@ -1,10 +1,11 @@
 # Home Inventory App – Frontend
 
-<img width="1136" height="745" alt="A screenshot of the app's dashboard, on the left showing a sidebar with the home's name, a list of rooms, and the user's name. On the right, a list of items with their name, owner, price, and location visible." src="https://github.com/user-attachments/assets/d7273af8-b08f-49dd-bc91-75a48fd32396" />
+<img width="1136" height="745" alt="A screenshot of the app's dashboard, on the left showing a sidebar with the home's name, a list of rooms, and the user's name. On the right, a list of items with their name, owner, price, and location visible." src="https://github.com/user-attachments/assets/9d30da75-66e4-40e4-8e39-454b2b4f8031" />
 
-User interface for the Home Inventory App, allowing users to manage their material goods by house, room and down to the individual item. Designed with accessibility, eco-design and optimal user experience in mind.
 
-Users can sign up, create homes and rooms, add items with details like warranty and price, and invite others to collaborate on shared homes. The interface includes a home dashboard, visual navigation, and control over item visibility.
+Home Inventory App frontend, designed with accessibility, eco-design and optimal user experience in mind.
+
+Users can sign up, create homes and rooms, add items with details like warranty and price, and invite others to collaborate on shared homes. The interface includes a home dashboard, room dashboards, as well as account and home setting pages (and dark mode of course).
 
 ## Table of Contents
 
