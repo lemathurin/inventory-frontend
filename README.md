@@ -13,6 +13,7 @@ Users can sign up, create homes and rooms, add items with details like warranty 
 - [Docker](#docker)
 - [Project Structure](#project-structure)
 - [Tests](#tests)
+- [Credits](#credits)
 
 ## Tech Stack
 
@@ -197,3 +198,7 @@ inventory-frontend/
 # End-to-end tests with Cypress
 npm run test:e2e:open   # Interactive UI
 ```
+
+## Credits
+
+This project was carried out to validate the RNCP Application Designer and Developer diploma (Titre RNCP Concepteur Développeur d'Applications de niveau VI). It was developped by [Pierre](https://github.com/PierrePedrono) and [Mathurin](https://mathurinsekine.fr).
