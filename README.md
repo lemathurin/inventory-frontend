@@ -1,251 +1,205 @@
-# 🏡 Application d'inventaire domestique - Frontend (inventory-frontend)
+# Home Inventory App – Frontend
 
-Interface utilisateur pour l'application d'inventaire domestique permettant aux utilisateurs de gérer leurs biens matériels par maison, pièce et article. Conçue dans un souci d'accessibilité, d'éco-conception et d'expérience utilisateur optimale.
+<img width="1136" height="745" alt="A screenshot of the app's dashboard, on the left showing a sidebar with the home's name, a list of rooms, and the user's name. On the right, a list of items with their name, owner, price, and location visible." src="https://github.com/user-attachments/assets/9d30da75-66e4-40e4-8e39-454b2b4f8031" />
 
-## 🚀 Fonctionnalités principales
 
-### 👤 Gestion des utilisateurs
-- **Inscription / Connexion** via email et mot de passe
-- **Tableau de bord personnalisé** : affichage des maisons, pièces et articles liés à l'utilisateur
-- **Profil utilisateur** : gestion des informations personnelles et préférences
+Home Inventory App frontend, designed with accessibility, eco-design and optimal user experience in mind.
 
-### 🏠 Gestion des maisons et des pièces
-- Interface intuitive pour ajouter, modifier et supprimer des **maisons** (nom, adresse)
-- Gestion visuelle des **pièces**, associées à une maison
-- Navigation fluide entre maisons et pièces
+Users can sign up, create homes and rooms, add items with details like warranty and price, and invite others to collaborate on shared homes. The interface includes a home dashboard, room dashboards, as well as account and home setting pages (and dark mode of course).
 
-### 📦 Gestion des articles
-- Formulaires complets pour créer et gérer des articles : nom, description, date d'achat, prix, garantie, etc.
-- Association d'articles à des pièces/maisons
-- Contrôle de visibilité (mode **public/privé**) avec indicateurs visuels
+## Table of Contents
 
-### ✉️ Invitations
-- Interface **HomeInvite** pour inviter d'autres utilisateurs à collaborer sur une maison
-- Gestion des invitations reçues et envoyées
+- [Tech Stack](#tech-stack)
+- [Installation](#installation)
+- [Docker](#docker)
+- [Project Structure](#project-structure)
+- [Tests](#tests)
+- [Credits](#credits)
 
-## 🛠️ Stack technique
+## Tech Stack
 
-- **Next.js** : framework React avec SSR, SSG, CSR pour des performances optimales
-- **TypeScript** : typage frontend sécurisé
-- **Tailwind CSS** : design rapide avec configuration centralisée
-- **ShadCN/UI** : composants modernes et personnalisables
-- **Axios** : gestion simple des appels API
-- **Cypress** : tests end-to-end simulant le parcours utilisateur
+- **Next.js**: React framework with good performance
+- **TypeScript**: Strong typing for safer code
+- **Tailwind CSS**: Utility-first CSS with centralized configuration
+- **shadcn/ui**: Customizable component library for faster development
+- **Axios**: Simplified API calls
+- **Cypress**: End-to-end testing simulating user behaviour
 
-## 🗂️ Structure du projet
+## Installation
 
-```
-frontend/
-├── public/             # Fichiers statiques
-├── src/
-│   ├── app/            # Structure des pages (Next.js App Router)
-│   ├── components/     # Composants réutilisables
-│   ├── hooks/          # Hooks personnalisés
-│   ├── lib/            # Utilitaires et configuration
-│   ├── stores/         # Gestion d'état (Zustand/Redux)
-│   ├── types/          # Définitions de types TypeScript
-│   └── services/       # Services d'API et intégrations
-├── cypress/            # Tests end-to-end
-├── tailwind.config.js  # Configuration Tailwind CSS
-├── next.config.js      # Configuration Next.js
-├── tsconfig.json       # Configuration TypeScript
-└── package.json        # Dépendances et scripts
-```
+### Prerequisites
 
-## 🚀 Installation et démarrage
+- Node.js (version 16 or higher)
 
-### Prérequis
-- Node.js (v16+)
-
-### Installation
+### Getting Started
 
 ```bash
-# Cloner le dépôt
+# Clone the repository
 git clone https://github.com/lemathurin/inventory-frontend.git
 cd inventory-frontend
 
-# Installer les dépendances
+# Install dependencies
 npm install
 
-# Configurer les variables d'environnement
-cp .env.example .env.local
-# Modifier le fichier .env.local avec vos valeurs
+# Configure environment variables
+cp .env.local
 ```
 
-### Démarrage
+Add this to the `.env.local`
+
+```
+NEXT_PUBLIC_API_BASE_URL=http://localhost:4000 # This is the base backend port, adjust to your needs
+```
+
+### Development
 
 ```bash
-# Mode développement
+# Start in development mode
 npm run dev
+```
 
-# Mode production
+### Production
+
+```bash
+# Build and start the production server
 npm run build
 npm start
 ```
 
-## 🐳 Docker - Déploiement local
+## Docker
 
-### Structure Docker complète
+It is recommeneded to create a Docker Compose file to manage everything at once.
 
 ```
-mes-projets/
+inventory/
 ├── inventory-frontend/
 │   ├── Dockerfile
-│   └── [votre code Next.js]
+│   └── [Next.js code]
 ├── inventory-backend/
 │   ├── Dockerfile
-│   └── [votre code Express]
-└── inventory-docker/
-    ├── docker-compose.yml
-    └── README.md
+│   └── [Express code]
+├── docker-compose.yml
+└── .env
 ```
 
-### Configuration Docker
+### Docker Compose
 
-**Dockerfile Frontend :**
-```dockerfile
-FROM node:20-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm install --legacy-peer-deps
-COPY . .
-ENV NEXT_TELEMETRY_DISABLED=1
-RUN npm run build 
-EXPOSE 3000
-CMD ["npm", "start"]
-```
-
-**Docker Compose (inventory-docker/docker-compose.yml) :**
 ```yaml
-version: '3.8'
 services:
-  postgres:
+  # PostgreSQL database
+  database:
     image: postgres:15-alpine
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-inventory_db}
-      POSTGRES_USER: ${POSTGRES_USER:-inventory_user}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-
+      - db_data:/var/lib/postgresql/data
+  # Backend Express.js
   backend:
-    build: ../inventory-backend
-    ports:
-      - "5000:5000"
+    build:
+      context: # Path to backend folder
+      dockerfile: Dockerfile
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-inventory_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-inventory_db}
-      JWT_SECRET: ${JWT_SECRET}
+      - DATABASE_URL= ${DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+    ports:
+      - "5001:5000"
     depends_on:
-      - postgres
-
+      - database
+  # Frontend Next.js
   frontend:
-    build: ../inventory-frontend
-    ports:
-      - "3000:3000"
+    build:
+      context: # Path to frontend folder
+      dockerfile: Dockerfile
+      args:
+        DISABLE_ESLINT_PLUGIN: "true"
     environment:
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:5000}
+      - NEXT_PUBLIC_API_URL= ${NEXT_PUBLIC_API_URL}
+    ports:
+      - "3001:3000"
     depends_on:
       - backend
-
 volumes:
-  postgres_data:
+  db_data:
 ```
 
-**Fichier .env (inventory-docker/.env) :**
-```bash
-# Base de données
+### Docker Compose .env
+
+```
+DATABASE_URL= # Database URL
 POSTGRES_DB=inventory_db
 POSTGRES_USER=inventory_user
-POSTGRES_PASSWORD=votre_mot_de_passe_securise
-
-# Backend
-JWT_SECRET=votre_jwt_secret_tres_long_et_securise
-
-# Frontend
-NEXT_PUBLIC_API_URL=http://localhost:5000
+POSTGRES_PASSWORD=password123
+JWT_SECRET=super-secure-secret
+NEXT_PUBLIC_API_URL=http://localhost:5000/api
 ```
 
-⚠️ **Important** : Ajoutez `.env` à votre `.gitignore` pour ne pas versionner les secrets !
-
-### Commandes Docker
+## Docker Compose Commands
 
 ```bash
-# Configuration initiale
-cp .env.example .env
-# Modifier le fichier .env avec vos valeurs sécurisées
-
-# Démarrage complet
+# Start all services
 docker-compose up --build -d
 
-# Voir les logs
+# View logs
 docker-compose logs -f
 
-# Arrêter les services
+# Stop services
 docker-compose down
 
-# Redémarrer
+# Restart services
 docker-compose restart
 
-# Voir le statut
+# Check status
 docker-compose ps
 ```
 
-### Accès aux services
-- **Frontend** : http://localhost:3000
-- **Backend** : http://localhost:5000  
-- **Database** : localhost:5432
+## Project Structure
 
-## 🧪 Tests
-
-```bash
-# Tests unitaires
-npm run test
-
-# Tests end-to-end avec Cypress
-npm run cypress:open   # Interface interactive
-npm run cypress:run    # Exécution en ligne de commande
+```
+inventory-frontend/
+├── cypress/                    # End-to-end test files and downloads
+├── src/                        # Main source code
+│   ├── app/                    # Next.js App Router structure
+│   │   ├── (app)/              # Authenticated user pages
+│   │   │   ├── layout.tsx      # Layout for authenticated views
+│   │   │   └── ...
+│   │   ├── (public)/           # Public routes (login, signup, onboarding)
+│   │   ├── globals.css         # Global styles
+│   │   └── layout.tsx          # Global layout
+│   ├── components/             # Reusable UI and app-specific components
+│   │   ├── ui/                 # shadcn/ui components
+│   │   ├── sidebar/            # Sidebar layout and nav components
+│   │   ├── onboarding/         # Onboarding-specific components
+│   │   └── ...                 # Other feature-specific components
+│   ├── config/                 # App configuration (e.g., API base URLs)
+│   ├── content/                # Static markdown content (e.g., terms & conditions)
+│   ├── context/                # Global context providers (e.g., theme)
+│   ├── domains/                # Feature-based domain logic
+│   │   ├── home/               # Logic for homes (hooks, types, API)
+│   │   ├── item/               # Logic for items
+│   │   ├── room/               # Logic for rooms
+│   │   └── user/               # Logic for user management
+│   ├── hooks/                  # App-wide reusable hooks
+│   ├── lib/                    # Utilities (e.g., Axios instance, helpers)
+│   └── middleware.ts           # Middleware for Next.js routing
+├── Dockerfile                  # Docker config for frontend
+├── next.config.js              # Next.js configuration
+├── package.json                # Project dependencies and scripts
+├── tailwind.config.ts          # Tailwind CSS configuration
+├── tsconfig.json               # TypeScript configuration
+└── README.md                   # Project documentation
 ```
 
-## ♻️ Éco-conception
+## Tests
 
-- Architecture optimisée avec Next.js
-- Police Geist : faible poids et bonne lisibilité
-- Code-splitting automatique avec Next.js
-- Images Docker Alpine Linux légères
+```bash
+# End-to-end tests with Cypress
+npm run test:e2e:open   # Interactive UI
+```
 
-## 🌍 Accessibilité
+## Credits
 
-- Contrastes vérifiés (mode clair/sombre)
-- Navigation clavier avec indicateurs de focus
-- Compatible lecteurs d'écran (ARIA, labels accessibles)
-
-## 🎨 Design System
-
-- Système de couleurs cohérent avec mode clair/sombre
-- Typographie standardisée (Geist)
-- Composants réutilisables (ShadCN/UI)
-- Spacing et layout uniformes
-
-## 🔄 Roadmap
-
-- 🌐 **Internationalisation (i18next)** : rendre l'application multilingue
-- 📱 **PWA complète** : expérience native sur mobile avec installation
-- 📁 **Gestion des médias** : upload et prévisualisation de fichiers associés aux articles
-
-
-
-## 📄 Licence
-
-Ce projet est sous licence MIT.
-
-Vous pouvez l'utiliser, le modifier et le redistribuer librement, à condition d'en mentionner l'auteur original.
-
-## 🙌 Remerciements
-
-Ce projet a été réalisé dans le cadre du titre professionnel RNCP de Concepteur/Développeur d'Applications.
-
-Merci :
-- À l'équipe pédagogique pour son accompagnement
-- À tous les testeurs pour leurs retours précieux
+This project was carried out to validate the RNCP Application Designer and Developer diploma (Titre RNCP Concepteur Développeur d'Applications de niveau VI). It was developped by [Pierre](https://github.com/PierrePedrono) and [Mathurin](https://mathurinsekine.fr).

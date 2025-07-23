@@ -15,19 +15,17 @@ interface DeleteAccountModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: (password: string) => Promise<void>;
-  // currentPassword: string;
 }
 
 export function DeleteAccountModal({
   isOpen,
   onClose,
   onConfirm,
-}: // currentPassword,
-DeleteAccountModalProps) {
+}: DeleteAccountModalProps) {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setIsLoading(true);
     try {
@@ -36,11 +34,11 @@ DeleteAccountModalProps) {
       setIsLoading(false);
       setPassword("");
     }
-  };
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-white">
+      <DialogContent className="bg-white text-black">
         <DialogHeader>
           <DialogTitle>
             Are you sure you want to delete your account?
