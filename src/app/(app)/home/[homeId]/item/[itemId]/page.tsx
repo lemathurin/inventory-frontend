@@ -1,6 +1,6 @@
 "use client";
 import { useGetItemById } from "@/domains/item/hooks/useGetItemById";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ItemModel } from "@/domains/item/item.types";
 import { Card } from "@/components/ui/card";
@@ -27,6 +27,7 @@ export default function ItemPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isItemAdmin, setIsItemAdmin] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     if (!itemId) return;
@@ -40,7 +41,6 @@ export default function ItemPage() {
       setLoading(true);
       const data = await getItemById(itemId as string);
       setItem(data);
-      console.log("Item data", data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch item");
       console.error("Error fetching item:", err);
@@ -80,7 +80,15 @@ export default function ItemPage() {
           },
           { label: item.name, isCurrent: true },
         ]}
-        actionButton={isItemAdmin && <Button>Edit item</Button>}
+        actionButton={
+          isItemAdmin && (
+            <Button
+              onClick={() => router.push(`/home/${homeId}/item/${itemId}/edit`)}
+            >
+              Edit item
+            </Button>
+          )
+        }
       />
       <div className="p-4 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

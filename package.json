@@ -4,10 +4,16 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:prod": "cross-env NODE_ENV=production next dev",
+    "dev:test": "cross-env NEXT_PUBLIC_API_BASE_URL=http://localhost:3000 NEXT_PUBLIC_API_URL=http://localhost:3000 next dev -p 3000",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 4000",
     "lint": "next lint",
-    "prettier": "prettier --write ."
+    "format:check": "prettier --check .",
+    "prettier": "prettier --write .",
+    "test:e2e:open": "cypress open",
+    "test:e2e:full": "concurrently --kill-others --success first \"npm run dev:test\" \"wait-on http://localhost:3000 && cypress run\"",
+    "test:e2e:dev": "concurrently --kill-others \"npm run dev:test\" \"wait-on http://localhost:3000 && cypress open\""
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -49,14 +55,21 @@
     "zod": "^3.25.51"
   },
   "devDependencies": {
-    "@types/node": "^20",
+    "@cypress/grep": "^4.1.0",
+    "@types/cypress": "^0.1.6",
+    "@types/node": "^20.19.2",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "concurrently": "^9.2.0",
+    "cross-env": "^7.0.3",
+    "cypress": "^14.5.0",
     "eslint": "^8",
     "eslint-config-next": "14.2.8",
     "postcss": "^8",
     "prettier": "^3.5.3",
+    "start-server-and-test": "^2.0.12",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wait-on": "^8.0.3"
   }
 }

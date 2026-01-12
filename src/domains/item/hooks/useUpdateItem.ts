@@ -20,7 +20,7 @@ export function useUpdateItem() {
         name,
         description,
         roomId,
-        isPublic,
+        public: isPublic,
         purchaseDate,
         price,
         hasWarranty,
